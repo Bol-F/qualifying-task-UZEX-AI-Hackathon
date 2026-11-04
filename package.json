@@ -1,0 +1,51 @@
+{
+  "name": "uzex-insight-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "import:trades": "tsx --env-file=.env.local scripts/import-trades.ts",
+    "test:e2e": "playwright test",
+    "format": "prettier --write src scripts tests *.ts *.json *.mjs README.md",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@google/genai": "2.32.0",
+    "@supabase/supabase-js": "2.119.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "csv-parse": "7.0.3",
+    "decimal.js": "10.6.0",
+    "geist": "1.9.1",
+    "lucide-react": "1.68.0",
+    "motion": "14.9.1",
+    "next": "16.4.5",
+    "radix-ui": "1.8.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-markdown": "10.1.0",
+    "recharts": "3.10.1",
+    "remark-gfm": "4.0.1",
+    "server-only": "0.0.1",
+    "sonner": "2.0.8",
+    "tailwind-merge": "3.7.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/postcss": "4.3.4",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.5",
+    "prettier": "3.9.10",
+    "tailwindcss": "4.3.4",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3"
+  }
+}

@@ -1,0 +1,3 @@
+external_id,contract_number,trade_date,product_name,price,quantity,unit,price_unit,currency,contract_type,execution_status
+SYNTHETIC-001,DEMO-001,2026-10-30,Urea (carbamide),2800000,50,t,t,UZS,Spot,Completed
+SYNTHETIC-002,DEMO-001,2026-10-30,Portland cement,640000,80,t,t,UZS,Spot,Completed

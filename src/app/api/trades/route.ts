@@ -1,0 +1,55 @@
+import { listTrades, allTrades } from "@/lib/db/queries";
+import { authorize, failure } from "@/lib/utils/api";
+import { filtersSchema } from "@/lib/validations/trades";
+import { NextResponse } from "next/server";
+export const runtime = "nodejs";
+export async function GET(req: Request) {
+  const denied = authorize(req);
+  if (denied) return denied;
+  try {
+    const params = new URL(req.url).searchParams;
+    const f = filtersSchema.parse(Object.fromEntries(params));
+    if (params.get("export") === "csv") {
+      const rows = await allTrades(f);
+      const keys = [
+        "id",
+        "external_id",
+        "contract_number",
+        "trade_date",
+        "product_name",
+        "price",
+        "quantity",
+        "unit",
+        "price_unit",
+        "currency",
+        "execution_status",
+        "data_source",
+      ] as const;
+      const cell = (v: unknown) =>
+        '"' +
+        String(v ?? "")
+          .replace(/^[=+@\-\t\r]/, "'$&")
+          .replaceAll('"', '""') +
+        '"';
+      return new Response(
+        "\uFEFF" +
+          [
+            keys.join(","),
+            ...rows.map((t) => keys.map((k) => cell(t[k])).join(",")),
+          ].join("\r\n"),
+        {
+          headers: {
+            "Content-Type": "text/csv; charset=utf-8",
+            "Content-Disposition": 'attachment; filename="uzex-trades.csv"',
+            "Cache-Control": "no-store",
+          },
+        },
+      );
+    }
+    return NextResponse.json(await listTrades(f), {
+      headers: { "Cache-Control": "no-store" },
+    });
+  } catch (e) {
+    return failure(e);
+  }
+}
