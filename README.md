@@ -1,5 +1,7 @@
 # UZEX Insight AI
 
+Production: **https://uzex-insight-ai.vercel.app** — deployed to Vercel with all 393,353 available synthetic registry records. The public HTTPS application uses local deterministic tools; Gemini is not enabled in this deployment.
+
 A Next.js financial analytics application with an evidence-grounded Uzbek / Russian assistant. The application starts without credentials in **DEMO DATA MODE**. Its 184 deterministic, synthetic records are stored in `src/lib/db/demo.ts`; none represent official UZEX transactions. No official live feed is claimed.
 
 The supplied **README2 CSV registry** is now supported locally through indexed SQLite (`DATA_MODE=local`), without a cloud database or API key. It currently contains **393,353 synthetic trades**, 6,616 contracts, 14,392 participants and 1,765 daily USD rates. The files supplied in this workspace do **not** include the 106,647 trades for 2024 or the broker directory advertised by README2. The application explicitly displays these gaps.
@@ -57,6 +59,28 @@ npx playwright test registry.e2e.ts
 
 The regular browser suite still verifies the small deterministic demo independently. Local assistant mode uses deterministic query tools and does not call Gemini. Configure Gemini separately if provider-backed natural-language planning is required.
 
+## Vercel deployment with the complete supplied dataset
+
+The project includes a lossless, immutable deployment snapshot containing all **393,353 available trades**. `data/registry.snapshot.gz` is a 67,178,939-byte archive; its SHA-256/expanded-size manifest is `data/registry.snapshot.json`. The build expands it to a 160,604,160-byte read-only SQLite database. The traced analytics function, including its dependencies, totals approximately 163 MB. The original workstation database and CSV files are excluded from function bundles.
+
+The snapshot stores shared product/contract/status values once and compresses record fields using a shared dictionary. Every decoded record was compared against the original database; all records and exact aggregates matched. Local uncompressed databases remain compatible with the same adapter. Only the deployment snapshot is included in Vercel API functions. No runtime database writes, external storage service, database credentials or Gemini key are needed for this synthetic demonstration.
+
+Use Node.js 24, the Next.js framework preset, `npm ci` as the install command and `npm run build` as the build command. Set these server-side Vercel variables for Production and Preview:
+
+| Variable             | Value                                                                |
+| -------------------- | -------------------------------------------------------------------- |
+| `DATA_MODE`          | `local`                                                              |
+| `AI_MODE`            | `local`                                                              |
+| `LOCAL_DATA_PATH`    | `data/registry.vercel.sqlite`                                        |
+| `REGISTRY_SNAPSHOT`  | `1`                                                                  |
+| `AGENT_STATE_SECRET` | A stable, securely generated random secret of at least 32 characters |
+
+The build verifies the snapshot's expanded size and checksum before replacing its output. A missing/corrupt snapshot fails the build; it never substitutes the 184-row demo. `.vercelignore` excludes credentials, local build output and raw data files from CLI uploads. The archive is a server build input and is not served from `public/`.
+
+The `uzex-insight-ai` project is deployed under `asadbekpro567s-projects` at **https://uzex-insight-ai.vercel.app**. Node.js 24, the Next.js preset and the variables above are configured. The deployment was uploaded from the local working directory through CLI 65.11.0; GitHub automatic deployments are not connected. For subsequent releases, verify the linked project/team and run `npx vercel@65.11.0 --prod`. Public health, dataset, analytics, CSV export, reports and assistant flows have been checked over HTTPS.
+
+To refresh the immutable dataset, import source CSVs locally and run `npm run pack:registry`. Publish the new `.gz` and `.json` together with the code and redeploy. Do not upload the 941 MB workstation database or import it during function invocation.
+
 ## Live imported records
 
 1. Create a Supabase project. Apply the SQL in `supabase/migrations` using Supabase migrations or SQL editor.
@@ -91,7 +115,7 @@ Agent tools are capped more tightly: 5,000 matched records per read, six calls o
 
 ## Verification and local release
 
-Run on **localhost**. The current README2 integration uses the supplied synthetic CSV registry; the original small demo remains available through `DATA_MODE=demo`. No Vercel deployment or Supabase connection is active. No credentials are bundled. Earlier phases recorded Gemini checks; local-mode tests use unpaid tools. See the [test report](TEST_REPORT.md) and [three-minute demo](DEMO_GUIDE.md) for historical verification.
+Run locally or visit **https://uzex-insight-ai.vercel.app**. Both use the supplied synthetic CSV registry; the original small demo remains available through `DATA_MODE=demo`. No Supabase connection is active and no credentials are bundled. The Vercel deployment uses local deterministic tools. Earlier phases recorded Gemini checks; see the [test report](TEST_REPORT.md) for current and historical verification.
 
 The design reference is `docs/design-concept.png`. The implementation preserves its dark shell, mint activity chart, compact metrics, commodity donut, and transaction/insight layout. Reference numbers and dates are deliberately replaced by fixture-derived values. Additional charts and responsive layouts implement the requested functionality.
 
@@ -110,7 +134,7 @@ The design reference is `docs/design-concept.png`. The implementation preserves 
 
 Never use `NEXT_PUBLIC_` for these secrets. `.env.local` and `.vercel` are ignored. `npm run check:secrets` scans production static assets for configured secret literals; `npm run check:gemini` checks account/model metadata without generating tokens.
 
-Use `DATA_MODE=local` for the supplied README2 registry or `DATA_MODE=demo` for the original fixture. Supabase and hosting configuration are retained as optional architecture from prior phases and are not connected. The GitHub remote is:
+Use `DATA_MODE=local` for the supplied README2 registry or `DATA_MODE=demo` for the original fixture. Vercel hosts the immutable compact snapshot; Supabase remains optional and unconnected. The GitHub remote is:
 
 ```powershell
 git remote -v

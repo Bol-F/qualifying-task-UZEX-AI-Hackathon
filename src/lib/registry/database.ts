@@ -4,16 +4,26 @@ import type { Filters, Trade } from "../validations/trades";
 import { decimalOrder } from "./format";
 import { AgentError } from "../ai/errors";
 import { summarize, type Analytics } from "../analytics/calculations";
+import { createRecordDecoder, type RecordCodec } from "./codec";
 
 export function summarizeRegistry(db: DatabaseSync, f: Filters) {
   const { sql, parameters } = where(f);
+  const decode = decoder(db);
   function* rows() {
     for (const row of db
       .prepare("SELECT record FROM trades" + sql)
       .iterate(...parameters))
-      yield JSON.parse(String(row.record)) as Trade;
+      yield decode(row.record);
   }
   return summarize(rows());
+}
+function decoder(db: DatabaseSync) {
+  const codec = db
+    .prepare("SELECT value FROM metadata WHERE key = 'codec'")
+    .get();
+  return createRecordDecoder(
+    codec ? (JSON.parse(String(codec.value)) as RecordCodec) : undefined,
+  );
 }
 
 export function localDatabasePath() {
@@ -131,6 +141,7 @@ function where(f: Filters) {
 }
 export class RegistryDatabase {
   readonly db: DatabaseSync;
+  private decode: ReturnType<typeof createRecordDecoder>;
   private summaries = new Map<string, Analytics>();
   private catalogCache?: {
     products: string[];
@@ -141,6 +152,7 @@ export class RegistryDatabase {
   };
   constructor(path = localDatabasePath()) {
     this.db = new DatabaseSync(path, { readOnly: true });
+    this.decode = decoder(this.db);
     if (this.manifest().version !== 1)
       throw new Error("Unsupported local registry version");
   }
@@ -221,7 +233,7 @@ export class RegistryDatabase {
         limit ?? f.pageSize,
         limit === undefined ? (f.page - 1) * f.pageSize : 0,
       )
-      .map((r) => JSON.parse(String(r.record)) as Trade);
+      .map((r) => this.decode(r.record));
     return { rows, total, mode: "local" as const };
   }
   dates(f: Filters, before?: string, limit = 90) {

@@ -1,0 +1,9 @@
+.env*
+.next*
+.qa
+test-results
+node_modules
+data/*.sqlite*
+data/*.tmp
+/*.csv
+docs/screenshots

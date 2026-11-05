@@ -10,3 +10,4 @@ test-results/
 supabase/.temp/
 data/*.sqlite*
 data/*.tmp
+.vercel

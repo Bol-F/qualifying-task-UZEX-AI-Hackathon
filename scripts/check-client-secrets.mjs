@@ -5,6 +5,7 @@ const names = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "AGENT_STATE_SECRET",
   "APP_API_KEY",
+  "VERCEL_OIDC_TOKEN",
 ];
 const secrets = names
   .filter((name) => process.env[name])

@@ -2,7 +2,7 @@
 
 This is the existing Next.js App Router application, hardened for the November 2026 demonstration. It is a shared analytics workspace, not a brokerage, order-entry system, official UZEX feed, or full exchange register.
 
-Current operating scope: **localhost**. The supplied README2 registry is active through `DATA_MODE=local`: 393,353 synthetic records in a local SQLite database. `DATA_MODE=demo` retains the 184-row fixture. Existing Supabase/Vercel adapters are dormant; no external database/hosting connection is established.
+Current operating scope: **localhost and Vercel production** at https://uzex-insight-ai.vercel.app. The supplied README2 registry is active through `DATA_MODE=local`: 393,353 synthetic records. An immutable compact snapshot supports serverless deployment without an external database. `DATA_MODE=demo` retains the 184-row fixture. Production uses Node.js 24 and local deterministic tools; the Supabase adapter remains dormant.
 
 ## Request and data flow
 
@@ -48,6 +48,10 @@ Indexes support date/ID pagination, commodity and identifier search, currency/pr
 Imports validate all rows before writes, normalize bilingual aliases, hash source plus canonical input for identity, deduplicate identical source rows, and upsert in bounded batches. A later batch failure can leave earlier batches committed; rerunning is idempotent. Source labels document provenance but are not independent authenticity verification.
 
 ## Accounting invariants
+
+For Vercel, `scripts/pack-registry.ts` produces a lossless 160.6 MB SQLite snapshot using normalized product/contract/status tables plus per-record compression with a shared dictionary. A compatibility view preserves the existing query interface. Optional global price/quantity sorts retain exact padded decimal keys and scan the snapshot; large secondary indexes are omitted from the cloud snapshot. The original workstation database retains those indexes.
+
+The 67.2 MB gzip archive and checksum/size manifest are deployment inputs. `scripts/prepare-registry.mjs` expands and verifies them at build time; Next.js tracing explicitly includes only the packed database in API functions. Runtime opens it read-only and performs no persistence. A changed dataset requires a new snapshot and redeployment. The snapshot is designed for the provided public synthetic dataset; future confidential or writable workspaces should use authenticated managed storage.
 
 - Count means stored transaction records, not the total activity of the exchange.
 - Transaction value uses the exact source amount when supplied, otherwise `price × quantity`, only when currency is known and `price_unit === unit`.
