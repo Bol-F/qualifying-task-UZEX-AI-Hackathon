@@ -20,6 +20,7 @@ import { executeTool, type TradeStore } from "../src/lib/ai/tool-runner";
 import { runAgent } from "../src/lib/ai/agent";
 import { interpretDates } from "../src/lib/ai/dates";
 import { GET as health } from "../src/app/api/health/route";
+import type { AgentModel } from "../src/lib/ai/provider";
 const store: TradeStore = {
   mode: "demo",
   read: async (f) => filterDemo(demoTrades, filtersSchema.parse(f)),
@@ -32,6 +33,61 @@ const store: TradeStore = {
 };
 const empty = () => ({ filters: {}, referencedIds: [] });
 const signal = () => AbortSignal.timeout(10000);
+
+test("incompatible model-selected donut falls back to a valid chart without losing evidence", async () => {
+  let count = 0;
+  const model: AgentModel = {
+    engine: "Mock Gemini",
+    async generate(contents) {
+      if (!count++)
+        return {
+          role: "model",
+          parts: [
+            {
+              functionCall: {
+                name: "compare_trading_periods",
+                args: {
+                  metric: "count",
+                  commodities: ["urea", "gold"],
+                  visualization: "bar",
+                },
+              },
+            },
+          ],
+        };
+      const response = contents
+        .flatMap((c) => c.parts ?? [])
+        .find((p) => p.functionResponse)?.functionResponse?.response;
+      return {
+        role: "model",
+        parts: [
+          {
+            text: JSON.stringify({
+              focus: "latest",
+              chart: { type: "donut", evidenceId: response?.evidenceId },
+            }),
+          },
+        ],
+      };
+    },
+  };
+  const result = await runAgent(
+    { question: "Compare carbamide and gold as a donut chart", language: "ru" },
+    {
+      id: randomUUID(),
+      owner: randomUUID(),
+      context: empty(),
+      messages: [],
+      updatedAt: Date.now(),
+    },
+    model,
+    store,
+    signal(),
+  );
+  assert.equal(result.value.chart?.type, "bar");
+  assert.equal(result.value.chart?.points[1].value, null);
+  assert.ok(result.value.evidence[0].matchedRecords > 0);
+});
 
 test("decimal filter boundaries and ordering retain differences beyond IEEE-754 precision", () => {
   const rows = [

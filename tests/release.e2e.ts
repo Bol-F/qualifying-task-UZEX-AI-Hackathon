@@ -69,10 +69,13 @@ test("trade filtering, exact source IDs and exported rows retain identical const
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export CSV", exact: true }).click();
   const download = await downloadPromise;
-  const csv = parse<{id:string}>(await readFile((await download.path())!, "utf8"), {
-    columns: true,
-    bom: true,
-  });
+  const csv = parse<{ id: string }>(
+    await readFile((await download.path())!, "utf8"),
+    {
+      columns: true,
+      bom: true,
+    },
+  );
   expect(csv.map((row: { id: string }) => row.id)).toEqual(
     expected.rows.map((row: { id: string }) => row.id),
   );
@@ -178,7 +181,7 @@ test("report regeneration keeps printing available and source scope includes con
   await page
     .getByRole("button", { name: "Generate AI Report", exact: true })
     .click();
-  await expect(page.getByRole("alert")).toContainText(
+  await expect(page.locator('.workspace-warning[role="alert"]')).toContainText(
     "Provider temporarily unavailable",
   );
   await expect(

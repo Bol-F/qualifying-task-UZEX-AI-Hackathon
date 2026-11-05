@@ -1,0 +1,378 @@
+[
+  {
+    "route": "dashboard",
+    "width": 1440,
+    "readyMs": 1125,
+    "overflow": false,
+    "scrollWidth": 1425,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Market overview",
+    "resources": 488416,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics",
+        "status": 200
+      },
+      {
+        "path": "/api/trades",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "trades",
+    "width": 1440,
+    "readyMs": 857,
+    "overflow": false,
+    "scrollWidth": 1425,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Trade explorer",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/trades",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "assistant",
+    "width": 1440,
+    "readyMs": 726,
+    "overflow": false,
+    "scrollWidth": 1425,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "AI AssistantINSIGHT ENGINE",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/health",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "analytics",
+    "width": 1440,
+    "readyMs": 1006,
+    "overflow": false,
+    "scrollWidth": 1425,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Market explorer",
+    "resources": 9515,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics/explore",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "reports",
+    "width": 1440,
+    "readyMs": 723,
+    "overflow": false,
+    "scrollWidth": 1425,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Analytics reports",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics/explore",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "dashboard",
+    "width": 1280,
+    "readyMs": 1060,
+    "overflow": false,
+    "scrollWidth": 1265,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Market overview",
+    "resources": 488416,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics",
+        "status": 200
+      },
+      {
+        "path": "/api/trades",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "trades",
+    "width": 1280,
+    "readyMs": 820,
+    "overflow": false,
+    "scrollWidth": 1265,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Trade explorer",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/trades",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "assistant",
+    "width": 1280,
+    "readyMs": 732,
+    "overflow": false,
+    "scrollWidth": 1265,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "AI AssistantINSIGHT ENGINE",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/health",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "analytics",
+    "width": 1280,
+    "readyMs": 1076,
+    "overflow": false,
+    "scrollWidth": 1265,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Market explorer",
+    "resources": 9515,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics/explore",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "reports",
+    "width": 1280,
+    "readyMs": 773,
+    "overflow": false,
+    "scrollWidth": 1265,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Analytics reports",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics/explore",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "dashboard",
+    "width": 768,
+    "readyMs": 1038,
+    "overflow": false,
+    "scrollWidth": 753,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Market overview",
+    "resources": 488416,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics",
+        "status": 200
+      },
+      {
+        "path": "/api/trades",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "trades",
+    "width": 768,
+    "readyMs": 776,
+    "overflow": false,
+    "scrollWidth": 753,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Trade explorer",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/trades",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "assistant",
+    "width": 768,
+    "readyMs": 705,
+    "overflow": false,
+    "scrollWidth": 753,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "AI AssistantINSIGHT ENGINE",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/health",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "analytics",
+    "width": 768,
+    "readyMs": 960,
+    "overflow": false,
+    "scrollWidth": 753,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Market explorer",
+    "resources": 9515,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics/explore",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "reports",
+    "width": 768,
+    "readyMs": 746,
+    "overflow": false,
+    "scrollWidth": 753,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Analytics reports",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics/explore",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "dashboard",
+    "width": 390,
+    "readyMs": 1013,
+    "overflow": false,
+    "scrollWidth": 375,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Market overview",
+    "resources": 488416,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics",
+        "status": 200
+      },
+      {
+        "path": "/api/trades",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "trades",
+    "width": 390,
+    "readyMs": 741,
+    "overflow": false,
+    "scrollWidth": 375,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Trade explorer",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/trades",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "assistant",
+    "width": 390,
+    "readyMs": 717,
+    "overflow": false,
+    "scrollWidth": 375,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "AI AssistantINSIGHT ENGINE",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/health",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "analytics",
+    "width": 390,
+    "readyMs": 968,
+    "overflow": false,
+    "scrollWidth": 375,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Market explorer",
+    "resources": 9515,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics/explore",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "route": "reports",
+    "width": 390,
+    "readyMs": 680,
+    "overflow": false,
+    "scrollWidth": 375,
+    "title": "UZEX Insight AI · Market intelligence",
+    "heading": "Analytics reports",
+    "resources": 0,
+    "missingNames": [],
+    "errors": [],
+    "requests": [
+      {
+        "path": "/api/analytics/explore",
+        "status": 200
+      }
+    ]
+  }
+]

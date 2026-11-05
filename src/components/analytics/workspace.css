@@ -1,3 +1,7 @@
+.report-contract-controls {
+  margin-top: 14px;
+  margin-bottom: 18px;
+}
 .workspace-tabs {
   display: flex;
   gap: 4px;

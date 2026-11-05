@@ -77,7 +77,12 @@ export function MarketSeries({
     };
   }, [data.fingerprint, onReady]);
   const router = useRouter();
-  if (!data.selectedCount)
+  if (
+    !data.selectedCount ||
+    data.series.every((series) =>
+      series.points.every((point) => point.value === null),
+    )
+  )
     return (
       <div className="pattern-empty">
         <h3>No chart observations available</h3>

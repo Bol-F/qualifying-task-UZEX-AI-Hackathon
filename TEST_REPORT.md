@@ -2,6 +2,8 @@
 
 Scope: existing UZEX Insight AI application. Baseline preserved in Git commit `70e3834`. No user transaction data was removed, no production database was modified, and no paid resource was created.
 
+Final owner direction: **localhost only; GitHub source synchronization is allowed; do not connect Vercel or Supabase.** Existing optional adapters are retained. The connected repository is `Bol-F/qualifying-task-UZEX-AI-Hackathon`; GitHub synchronization is separate from hosting.
+
 ## Environment and method
 
 Windows, Node.js 24, Next.js 16.4.5, strict TypeScript, installed Google Chrome controlled by Playwright. The Browser plugin was unavailable. A headed Chrome audit inspected all five pages at **1440, 1280, 768 and 390 pixels**. Additional automated tests click real controls and compare API results with deterministic fixture calculations. Playwright now builds and serves a separate **production** artifact at port 3100 with `DATA_MODE=demo` and `AI_MODE=local`; no inference request is required or made by the automated suite.
@@ -10,32 +12,32 @@ Windows, Node.js 24, Next.js 16.4.5, strict TypeScript, installed Google Chrome 
 
 Final command totals and release screenshots are recorded after the last verification run below. A passing model-access check is kept separate from generation verification.
 
-| Quality gate | Evidence / current status |
-| --- | --- |
-| Application identity, meaningful content, navigation | Headed Chrome, all five routes, all four widths; no blank page or framework overlay |
-| Responsive rendering | No document overflow in the twenty page/viewport combinations; tables scroll within their containers |
-| Dashboard consistency | Count equals API table total, sum of daily counts, and sum of commodity counts in five representative selections |
-| Trade Explorer | Commodity/contract search, dates, currency/basis, decimal sorting, pagination, exact record ID, details, reset and CSV checked |
-| Bilingual data tools | Unit mocks plus real backend/local-tool browser conversations; dates, Uzbek replay and previous available date preserved |
-| Gemini account access | `npm run check:gemini` returned `models/gemini-3.5-flash-lite`, available; metadata request only |
-| Fresh paid Gemini generation | **UNVERIFIED in Phase 4**: no separate spending approval received. Phase 3 documented prior live tool calling and report framing; this audit does not relabel old evidence as a fresh run |
-| Numeric/chart accuracy | Direct fixture/API checks; exact decimal tests, null-vs-zero tests, source links and CSV row equality |
-| Report generation/print | Calculated report, inherited contract filter, repeated generation, provider-error recovery and print-ready state tested |
-| Official knowledge references | UZEX overview/archive pages reopened; transaction/status entries explicitly disclose application-dictionary scope |
-| External Supabase connection | **UNVERIFIED**: no UZEX database credentials/project. Connected inactive unrelated project was not changed |
-| Public deployment / HTTPS | **UNVERIFIED**: no matching UZEX Vercel project or linked Git remote. Existing unrelated projects were not changed |
+| Quality gate                                         | Evidence / current status                                                                                                                                                                 |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Application identity, meaningful content, navigation | Headed Chrome, all five routes, all four widths; no blank page or framework overlay                                                                                                       |
+| Responsive rendering                                 | No document overflow in the twenty page/viewport combinations; tables scroll within their containers                                                                                      |
+| Dashboard consistency                                | Count equals API table total, sum of daily counts, and sum of commodity counts in five representative selections                                                                          |
+| Trade Explorer                                       | Commodity/contract search, dates, currency/basis, decimal sorting, pagination, exact record ID, details, reset and CSV checked                                                            |
+| Bilingual data tools                                 | Unit mocks plus real backend/local-tool browser conversations; dates, Uzbek replay and previous available date preserved                                                                  |
+| Gemini account access                                | `npm run check:gemini` returned `models/gemini-3.5-flash-lite`, available; metadata request only                                                                                          |
+| Fresh paid Gemini generation                         | **UNVERIFIED in Phase 4**: no separate spending approval received. Phase 3 documented prior live tool calling and report framing; this audit does not relabel old evidence as a fresh run |
+| Numeric/chart accuracy                               | Direct fixture/API checks; exact decimal tests, null-vs-zero tests, source links and CSV row equality                                                                                     |
+| Report generation/print                              | Calculated report, inherited contract filter, repeated generation, provider-error recovery and print-ready state tested                                                                   |
+| Official knowledge references                        | UZEX overview/archive pages reopened; transaction/status entries explicitly disclose application-dictionary scope                                                                         |
+| External Supabase connection                         | **UNVERIFIED**: no UZEX database credentials/project. Connected inactive unrelated project was not changed                                                                                |
+| Public deployment / HTTPS                            | **OUT OF SCOPE** by the owner’s final localhost-only instruction. No Vercel deployment was created; local production HTTP is tested                                                       |
 
 ## Representative numerical evidence
 
 All figures below describe the synthetic fixture only.
 
-| Selection | Stored rows | Valid value (UZS) | Reported quantity |
-| --- | ---: | ---: | --- |
-| All fixture records | 184 | 382,044,714,000 | 2,588 m³; 16,340 t |
-| Carbamide, October 28 | 3 | 983,177,000 | 351 t |
-| Carbamide, October 24 | 3 | 1,556,801,000 | 555 t |
-| October 24–30 | 42 | 84,305,811,000 | 468 m³; 3,937 t |
-| Carbamide, November 4 | 0 matched stored rows | Unavailable | Unavailable |
+| Selection             |           Stored rows | Valid value (UZS) | Reported quantity  |
+| --------------------- | --------------------: | ----------------: | ------------------ |
+| All fixture records   |                   184 |   382,044,714,000 | 2,588 m³; 16,340 t |
+| Carbamide, October 28 |                     3 |       983,177,000 | 351 t              |
+| Carbamide, October 24 |                     3 |     1,556,801,000 | 555 t              |
+| October 24–30         |                    42 |    84,305,811,000 | 468 m³; 3,937 t    |
+| Carbamide, November 4 | 0 matched stored rows |       Unavailable | Unavailable        |
 
 For every selection, dashboard count, table total, daily-count sum and commodity-count sum agreed. The last line is an unavailable source selection, not a statement that the real exchange had zero activity. Financial values require an explicit compatible price basis. There is no currency or unit conversion.
 
@@ -59,6 +61,8 @@ For every selection, dashboard count, table total, daily-count sum and commodity
 No public transaction write route or arbitrary SQL/JavaScript execution exists. Tool names and arguments are allowlisted and validated. Origin checks, bounded request bytes, bounded record/tool/history/chart counts, session ownership, HMAC checkpoints and safe error handling are covered by tests. Secrets remain server-side; repository/staged-file and built-client scans check configured secret literals without printing them. CSV escaping handles formula prefixes, including leading whitespace. Imported instructions never become executable functions or unverified numeric model prose.
 
 RLS and browser-role revocation were reviewed in the migration files. Their behavior against an external database remains unverified. Public demo data is intentionally readable; confidential imports need authentication or an authenticated proxy. The existing API key gate is not a user-login product. Per-instance rate limits/locks and expiring checkpoint replay behavior remain documented prototype limitations.
+
+The full dependency audit reports **8 moderate development-tool advisories** downstream of the lint toolchain’s minimatch dependency, with **0 high or critical findings**. The production-only audit reports **0 vulnerabilities**. An automatic suggested fix would downgrade the Next.js lint configuration; that incompatible framework change was not applied. No affected glob-pattern API is exposed through the application.
 
 ## Performance review
 
@@ -85,4 +89,18 @@ npm start
 
 ## Final results
 
-Pending final command completion and production screenshot review. This line is replaced before handoff; no pending check is counted as passed.
+- Clean `npm ci`: passed (645 packages).
+- Lint: passed. Strict typecheck: passed.
+- Unit tests: **51 passed**, zero failures/skips.
+- Production browser tests: **15 passed**, zero failures/skips, 37.8 seconds including test-server build/start.
+- Final normal production build: passed; all five pages and API routes emitted successfully.
+- Headed Chrome review: **20 page/viewport combinations passed**, no overflow, missing control names, application errors or console warnings.
+- Actual chart-point click navigated to the matching commodity/date source trades; table source drill-down also passed.
+- Final dashboard readiness: 1013–1125 ms on this machine, including the network-idle wait. Initial dashboard JavaScript transfer: 488,416 bytes, about 3.2% above the baseline after exact-decimal validation. This is a local observation, not a controlled speedup claim.
+- Production secret scan: **32 static assets scanned**, configured Gemini/checkpoint secret literals absent.
+- Production audit: **0 vulnerabilities**; full audit: 8 moderate development findings, 0 high/critical.
+- Gemini metadata: configured account can access `models/gemini-3.5-flash-lite`. Fresh billable generation remains unverified under the no-charge constraint.
+- A stable random checkpoint secret was configured in the ignored local environment file without displaying it.
+- Real application screenshots: `docs/screenshots/release-*.png`; measurement evidence: `docs/qa-matrix.json`.
+
+The local demo and source package pass their release gates. External database verification, fresh paid inference and public hosting are not represented as verified. Vercel/Supabase connection is outside the owner’s requested local-only scope.

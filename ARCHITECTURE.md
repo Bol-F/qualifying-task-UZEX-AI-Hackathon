@@ -2,6 +2,8 @@
 
 This is the existing Next.js App Router application, hardened for the November 2026 demonstration. It is a shared analytics workspace, not a brokerage, order-entry system, official UZEX feed, or full exchange register.
 
+Current operating scope: **localhost + GitHub source synchronization only**, as requested by the owner on November 5. The synthetic fixture is active. Existing Supabase/Vercel adapters are dormant; no external database/hosting connection is established.
+
 ## Request and data flow
 
 `Browser → read-only Next.js routes → validated query builders → synthetic fixture or Supabase trades`
@@ -12,14 +14,14 @@ The shell joins Dashboard, Trade Explorer, Assistant, Market Explorer and Report
 
 ## Boundaries
 
-| Layer | Responsibility |
-| --- | --- |
-| `src/app/api` | Origin checks for conversational/report mutations, authorization gate, request validation, byte limits, deadlines, rate limiting, safe responses |
-| `src/lib/db` | Server-only credential access, stable pagination, quoted PostgREST values, compatible filtering, explicit demo/live selection |
-| `src/lib/analytics` | Decimal arithmetic, coverage, comparisons, observations, statistical rules, source links |
-| `src/lib/ai` | SDK client, model-access check, retry policy, tool loop, evidence schemas, signed checkpoints, approved knowledge |
-| `src/components` | Shared financial UI; charts, accessible controls, source drawers, report printing |
-| `scripts/import-trades.ts` | CLI-only validated ingestion; no public transaction write route |
+| Layer                      | Responsibility                                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/app/api`              | Origin checks for conversational/report mutations, authorization gate, request validation, byte limits, deadlines, rate limiting, safe responses |
+| `src/lib/db`               | Server-only credential access, stable pagination, quoted PostgREST values, compatible filtering, explicit demo/live selection                    |
+| `src/lib/analytics`        | Decimal arithmetic, coverage, comparisons, observations, statistical rules, source links                                                         |
+| `src/lib/ai`               | SDK client, model-access check, retry policy, tool loop, evidence schemas, signed checkpoints, approved knowledge                                |
+| `src/components`           | Shared financial UI; charts, accessible controls, source drawers, report printing                                                                |
+| `scripts/import-trades.ts` | CLI-only validated ingestion; no public transaction write route                                                                                  |
 
 ## Storage and provenance
 

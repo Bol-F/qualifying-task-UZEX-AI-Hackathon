@@ -218,7 +218,11 @@ export async function runAgent(
     );
     if (selected?.points.length)
       requestedChart = chartSchema.parse({
-        type: presentation.chart.type,
+        type:
+          presentation.chart.type === "donut" &&
+          selected.points.some((p) => p.value === null || Number(p.value) < 0)
+            ? "bar"
+            : presentation.chart.type,
         title: selected.title,
         unit: selected.unit,
         evidenceId: selected.id,

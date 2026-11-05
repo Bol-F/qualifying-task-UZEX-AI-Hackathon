@@ -196,6 +196,7 @@ export function MarketExplorer() {
           <label>
             Contract type
             <select
+              aria-label="Contract type"
               value={contract}
               onChange={(e) => setContract(e.target.value)}
             >

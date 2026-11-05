@@ -148,7 +148,12 @@ export default function Trades() {
         <Button
           variant="outline"
           onClick={download}
-          disabled={loading || !!error || exporting}
+          disabled={
+            loading ||
+            !!error ||
+            exporting ||
+            (!exactProduct && !exactId && search !== debounced)
+          }
         >
           <Download />
           {exporting ? "Exporting…" : "Export CSV"}
@@ -239,6 +244,7 @@ export default function Trades() {
             <label>
               Currency
               <select
+                aria-label="Currency"
                 value={currency}
                 onChange={(e) => {
                   setCurrency(e.target.value);

@@ -88,7 +88,6 @@ The correct result is no matching stored records and an out-of-coverage warning.
 - [x] Desktop, laptop, tablet and mobile layouts
 - [x] Automated unit and production-browser regression tests
 - [ ] Fresh billable generation verification under the Phase 4 no-charge constraint
-- [ ] Authentic external database queries and applied migrations
-- [ ] Verified public HTTPS deployment
+- External database and public hosting are outside the current localhost-only scope; no Supabase or Vercel connection is active.
 
 See `TEST_REPORT.md` for actual verification results and limitations.

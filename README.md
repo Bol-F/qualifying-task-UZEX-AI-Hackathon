@@ -50,8 +50,33 @@ Interactive analytics/export are capped at 100,000 records; narrow the date rang
 
 Agent tools are capped more tightly: 5,000 matched records per read, six calls over four rounds, ten displayed records, twenty reference IDs and ninety chart points. A large request fails with an instruction to narrow the period; it never presents a silently truncated aggregate. Comparisons may read two bounded datasets. Chat streams tool progress as NDJSON, then emits one fully validated answer. It deliberately does not stream unverified model prose.
 
-## Verification and deployment
+## Verification and local release
 
-No credentials are bundled and no external database has been provisioned. Live Gemini model access, Russian database-grounded tool calling and structured report framing were checked using the configured account. Supabase integration still requires credentials and applied migrations. No public deployment has been performed or confirmed. See [deployment instructions and the three-minute demo](docs/phase-3.md).
+Current owner instruction: run on **localhost**, retain local demo data, and use **GitHub only** for source synchronization. No Vercel deployment or Supabase connection is active. No credentials are bundled. Phase 3 recorded live Gemini tool calling/report checks; the current audit verified model access and used unpaid mocks/local tools for repeatable tests. See the [current test report](TEST_REPORT.md) and [three-minute demo](DEMO_GUIDE.md).
 
 The design reference is `docs/design-concept.png`. The implementation preserves its dark shell, mint activity chart, compact metrics, commodity donut, and transaction/insight layout. Reference numbers and dates are deliberately replaced by fixture-derived values. Additional charts and responsive layouts implement the requested functionality.
+
+## Environment and GitHub
+
+| Variable                                    | Purpose                                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `DATA_MODE`                                 | `demo` or `live`; invalid values fail closed                                         |
+| `AI_MODE`                                   | `auto` uses configured Gemini; `local` runs explicitly labeled unpaid tools          |
+| `GEMINI_API_KEY`                            | Server-only inference credential                                                     |
+| `GEMINI_MODEL`                              | Account-supported model, checked at runtime                                          |
+| `AGENT_STATE_SECRET`                        | Stable random secret, at least 32 characters; required on Vercel                     |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Server-only live data configuration                                                  |
+| `APP_API_KEY`                               | Optional API gate supplied by an authenticated proxy; never place it in browser code |
+
+Never use `NEXT_PUBLIC_` for these secrets. `.env.local` and `.vercel` are ignored. `npm run check:secrets` scans production static assets for configured secret literals; `npm run check:gemini` checks account/model metadata without generating tokens.
+
+Keep `DATA_MODE=demo` for the current local release. Supabase and hosting configuration are retained as optional architecture from prior phases and are not connected. The GitHub remote is:
+
+```powershell
+git remote -v
+# origin: https://github.com/Bol-F/qualifying-task-UZEX-AI-Hackathon.git
+npm run build
+npm start
+```
+
+Open http://localhost:3000. GitHub synchronization does not publish a hosted website. Do not commit `.env.local`, browser session state, or provider secrets. Historical deployment notes in `docs/phase-3.md` are reference material, not instructions to deploy this local release.

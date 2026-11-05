@@ -285,6 +285,13 @@ export function ReportBuilder() {
           </section>
           <section>
             <h2>Dataset coverage</h2>
+            <p className="report-applied-filters">
+              Selected commodities:{" "}
+              {report.snapshot.selection.products.join(", ") ||
+                "All available commodities"}{" "}
+              · Contract type:{" "}
+              {report.snapshot.selection.contractType || "All types"}.
+            </p>
             <dl className="report-coverage">
               <div>
                 <dt>Dataset dates</dt>
@@ -400,7 +407,15 @@ export function ReportBuilder() {
                   .
                 </p>
                 <p className="muted">
-                  Baseline:{" "}
+                  Baseline commodities:{" "}
+                  {report.snapshot.selection.compareProducts.join(", ") ||
+                    report.snapshot.selection.products.join(", ") ||
+                    "All available commodities"}{" "}
+                  · Baseline contract type:{" "}
+                  {report.snapshot.selection.compareContractType ||
+                    report.snapshot.selection.contractType ||
+                    "All types"}
+                  . Baseline:{" "}
                   {report.snapshot.selection.compareFrom ?? "same start"} →{" "}
                   {report.snapshot.selection.compareTo ?? "same end"}. Missing
                   observations remain unavailable.

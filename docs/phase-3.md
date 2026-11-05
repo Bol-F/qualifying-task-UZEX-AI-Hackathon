@@ -1,5 +1,7 @@
 # Phase 3 — hackathon handoff
 
+This is the historical Phase 3 handoff. Current results and owner constraints are in [TEST_REPORT.md](../TEST_REPORT.md). The current release is **localhost + GitHub only**; do not execute the historical deployment steps below.
+
 ## Product surfaces
 
 - **Overview**: original KPIs/charts/recent trades, dataset dates, and a dismissible guided walkthrough. Questions are generated from actual stored records. The synthetic fixture covers October; the guide does not pretend November transactions exist.
