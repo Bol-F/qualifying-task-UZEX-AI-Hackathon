@@ -179,7 +179,7 @@ test("date interpretation handles Russian, Uzbek, current year and Tashkent midn
   for (const question of ["за 4 ноября", "4-noyabrdagi bitimlar", "4 ноябр"])
     assert.deepEqual(interpretDates(question, "2026-11-04"), ["2026-11-04"]);
   assert.deepEqual(interpretDates("kecha", "2026-11-04"), ["2026-11-03"]);
-  assert.deepEqual(interpretDates("2026-02-30", "2026-11-04"), []);
+  assert.throws(() => interpretDates("2026-02-30", "2026-11-04"), AgentError);
 });
 test("bilingual and mixed inputs, typos and Cyrillic follow-ups preserve filters in local mode", () => {
   for (const q of [

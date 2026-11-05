@@ -6,3 +6,5 @@ node_modules/
 *.tsbuildinfo
 test-results/
 .qa/
+.vercel/
+supabase/.temp/

@@ -17,6 +17,7 @@ import { useResource } from "@/hooks/use-resource";
 import type { WorkspaceData } from "@/lib/analytics/service";
 import type { explainFacts } from "@/lib/ai/report-explanations";
 import { number } from "@/lib/utils";
+import { sourceLink } from "@/lib/analytics/source-links";
 const MarketSeries = dynamic(
   () =>
     import("@/components/analytics/market-series").then((m) => m.MarketSeries),
@@ -32,13 +33,16 @@ export function ReportBuilder() {
     [products, setProducts] = useState<string[]>([]),
     [baselineFrom, setBaselineFrom] = useState(""),
     [baselineTo, setBaselineTo] = useState(""),
+    [contractType, setContractType] = useState(""),
+    [compareContractType, setCompareContractType] = useState(""),
+    [compareProduct, setCompareProduct] = useState(""),
     [report, setReport] = useState<Report | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const [chartReady, setChartReady] = useState(false);
   const [interactive, setInteractive] = useState(false);
   const chartMounted = useCallback(() => setChartReady(true), []);
-  const { data: available } = useResource<WorkspaceData>(
+  const { data: available, error: optionsError } = useResource<WorkspaceData>(
     "/api/analytics/explore",
   );
   useEffect(() => {
@@ -48,11 +52,14 @@ export function ReportBuilder() {
     if (p.has("product")) setProducts(p.getAll("product").slice(0, 3));
     if (p.has("compareFrom")) setBaselineFrom(p.get("compareFrom")!);
     if (p.has("compareTo")) setBaselineTo(p.get("compareTo")!);
+    if (p.has("contractType")) setContractType(p.get("contractType")!);
+    if (p.has("compareContractType"))
+      setCompareContractType(p.get("compareContractType")!);
+    if (p.has("compareProduct")) setCompareProduct(p.get("compareProduct")!);
     setInteractive(true);
   }, []);
   async function generate(calculated = false) {
     setBusy(true);
-    setChartReady(false);
     setError("");
     try {
       const response = await fetch(
@@ -65,6 +72,9 @@ export function ReportBuilder() {
             ...(from ? { from } : {}),
             ...(to ? { to } : {}),
             products,
+            ...(contractType ? { contractType } : {}),
+            ...(compareContractType ? { compareContractType } : {}),
+            compareProducts: compareProduct ? [compareProduct] : [],
             ...(baselineFrom ? { compareFrom: baselineFrom } : {}),
             ...(baselineTo ? { compareTo: baselineTo } : {}),
           }),
@@ -73,6 +83,7 @@ export function ReportBuilder() {
       );
       const result = await response.json();
       if (!response.ok) throw new Error(result.error);
+      setChartReady(false);
       setReport(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Report unavailable");
@@ -97,6 +108,12 @@ export function ReportBuilder() {
         </Button>
       </div>
       <section className="panel report-controls no-print">
+        {optionsError && (
+          <p className="workspace-warning" role="status">
+            Commodity options are unavailable: {optionsError} You can still
+            choose a narrow date range and generate a report.
+          </p>
+        )}
         <div className="workspace-filters">
           <label>
             Report from
@@ -168,6 +185,50 @@ export function ReportBuilder() {
             {busy ? "Generating report…" : "Generate AI Report"}
           </Button>
         </div>
+      </section>
+      <section className="panel report-contract-controls no-print">
+        <div className="workspace-filters">
+          <label>
+            Report contract type
+            <select
+              value={contractType}
+              onChange={(e) => setContractType(e.target.value)}
+            >
+              <option value="">All types</option>
+              {available?.options.contractTypes.map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Baseline commodity
+            <select
+              value={compareProduct}
+              onChange={(e) => setCompareProduct(e.target.value)}
+            >
+              <option value="">Same commodities</option>
+              {available?.options.products.map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Baseline contract type
+            <select
+              value={compareContractType}
+              onChange={(e) => setCompareContractType(e.target.value)}
+            >
+              <option value="">Same contract types</option>
+              {available?.options.contractTypes.map((v) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="filter-help">
+          Report comparisons use transaction counts. Values remain grouped by
+          currency and reported quantities by unit.
+        </p>
       </section>
       {error && (
         <div className="workspace-warning" role="alert">
@@ -282,6 +343,7 @@ export function ReportBuilder() {
               )}
             </div>
             <MarketSeries
+              key={report.snapshot.generatedAt}
               data={report.snapshot}
               drill={false}
               onReady={chartMounted}
@@ -306,18 +368,9 @@ export function ReportBuilder() {
                       <td>
                         <Link
                           className="text-link"
-                          href={
-                            "/trades?" +
-                            new URLSearchParams({
-                              productName: p.name,
-                              ...(report.snapshot.selection.from
-                                ? { from: report.snapshot.selection.from }
-                                : {}),
-                              ...(report.snapshot.selection.to
-                                ? { to: report.snapshot.selection.to }
-                                : {}),
-                            })
-                          }
+                          href={sourceLink(report.snapshot.selection, {
+                            productName: p.name,
+                          })}
                         >
                           Inspect source
                           <ArrowUpRight size={12} />

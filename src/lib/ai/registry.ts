@@ -34,13 +34,24 @@ export const toolSchemas = {
       periodA: period.optional(),
       periodB: period.optional(),
       previousAvailableDay: z.boolean().optional(),
+      lastTwoAvailableDays: z.boolean().optional(),
       commodities: z.array(z.string().min(1).max(120)).length(2).optional(),
     })
     .refine(
       (v) =>
+        !!v.lastTwoAvailableDays ||
         !!v.commodities ||
         (!!v.periodA && (!!v.periodB || !!v.previousAvailableDay)),
-      "Provide two commodities or a current period and comparison",
+      "Provide two commodities, the last two available days, or a current period and comparison",
+    )
+    .refine(
+      (v) =>
+        [
+          !!v.commodities,
+          !!v.previousAvailableDay,
+          !!v.lastTwoAvailableDays,
+        ].filter(Boolean).length <= 1,
+      "Choose one comparison mode",
     ),
   get_transaction_trends: z.strictObject({
     ...base,
@@ -72,7 +83,7 @@ const descriptions: Record<ToolName, string> = {
   get_top_commodities:
     "Rank commodities by an explicit metric. Value requires currency; quantity requires unit.",
   compare_trading_periods:
-    "Compare two explicit inclusive periods, two commodity aliases, or periodA against the previous available trading day via previousAvailableDay=true. Missing observations are unavailable, never zero. Value needs currency; quantity needs unit.",
+    "Compare two explicit inclusive periods, two commodity aliases, the latest two observed dates via lastTwoAvailableDays=true, or periodA against the previous available trading day via previousAvailableDay=true. Missing observations are unavailable, never zero. Value needs currency; quantity needs unit.",
   get_transaction_trends:
     "Daily deterministic aggregates. Use lastTradingDays for the last N available dates, not calendar days. Request a chart with visualization.",
   explain_exchange_term:

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ScanLine, ArrowUpRight } from "lucide-react";
 import type { WorkspaceData } from "@/lib/analytics/service";
+import { sourceLink } from "@/lib/analytics/source-links";
 export function PatternExplorer({ data }: { data: WorkspaceData }) {
   return (
     <section className="panel pattern-explorer">
@@ -35,15 +36,12 @@ export function PatternExplorer({ data }: { data: WorkspaceData }) {
             <p>{f.reason}</p>
             <p className="muted">{f.method}</p>
             <div className="pattern-links">
-              <Link href={"/trades?" + new URLSearchParams(f.filters)}>
+              <Link href={sourceLink(data.selection, f.filters)}>
                 Inspect matching records
                 <ArrowUpRight size={12} />
               </Link>
               {f.recordIds.slice(0, 3).map((id) => (
-                <Link
-                  key={id}
-                  href={"/trades?search=" + encodeURIComponent(id)}
-                >
+                <Link key={id} href={"/trades?id=" + encodeURIComponent(id)}>
                   {id}
                 </Link>
               ))}

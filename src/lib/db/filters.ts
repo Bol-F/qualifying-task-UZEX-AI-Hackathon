@@ -1,4 +1,5 @@
 import type { Filters, Trade } from "@/types";
+import Decimal from "decimal.js";
 export function filterDemo(rows: Trade[], f: Filters) {
   return rows
     .filter(
@@ -15,19 +16,23 @@ export function filterDemo(rows: Trade[], f: Filters) {
         (!f.currency || t.currency === f.currency) &&
         (!f.id || t.id === f.id) &&
         (!f.productName || t.product_name === f.productName) &&
+        (!f.productNames?.length || f.productNames.includes(t.product_name)) &&
         (!f.contractType || t.contract_type === f.contractType) &&
         (!f.contractNumber || t.contract_number === f.contractNumber) &&
         (!f.unit || t.unit === f.unit) &&
+        (!f.priceUnit || t.price_unit === f.priceUnit) &&
         (!f.status || t.execution_status === f.status) &&
-        (f.minQuantity === undefined || Number(t.quantity) >= f.minQuantity) &&
-        (f.maxQuantity === undefined || Number(t.quantity) <= f.maxQuantity) &&
-        (f.minPrice === undefined || Number(t.price) >= f.minPrice) &&
-        (f.maxPrice === undefined || Number(t.price) <= f.maxPrice),
+        (f.minQuantity === undefined ||
+          new Decimal(t.quantity).gte(f.minQuantity)) &&
+        (f.maxQuantity === undefined ||
+          new Decimal(t.quantity).lte(f.maxQuantity)) &&
+        (f.minPrice === undefined || new Decimal(t.price).gte(f.minPrice)) &&
+        (f.maxPrice === undefined || new Decimal(t.price).lte(f.maxPrice)),
     )
     .sort((a, b) => {
       const v =
         f.sort === "price" || f.sort === "quantity"
-          ? Number(a[f.sort]) - Number(b[f.sort])
+          ? new Decimal(a[f.sort]).comparedTo(b[f.sort])
           : String(a[f.sort]).localeCompare(String(b[f.sort]));
       return (f.order === "asc" ? v : -v) || a.id.localeCompare(b.id);
     });

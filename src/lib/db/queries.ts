@@ -9,6 +9,7 @@ import {
   type Trade,
 } from "@/lib/validations/trades";
 import { filterDemo } from "./filters";
+import { buildTradeQuery } from "./query-builder";
 export { filterDemo } from "./filters";
 export async function datasetCoverage(signal?: AbortSignal) {
   if (dataMode() === "demo") {
@@ -61,35 +62,7 @@ export async function datasetCoverage(signal?: AbortSignal) {
   };
 }
 function query(f: Filters) {
-  let q = database()
-    .from("trades")
-    .select(
-      "id,external_id,contract_number,trade_date,product_name,normalized_product_name,price::text,quantity::text,unit,price_unit,currency,contract_type,execution_status,data_source,imported_at",
-      { count: "exact" },
-    );
-  if (f.search) {
-    const safe = f.search
-      .replace(/[^\p{L}\p{N}\s'-]/gu, "")
-      .replace(/[%_]/g, "");
-    if (safe)
-      q = q.or(
-        `normalized_product_name.ilike.%${safe}%,contract_number.ilike.%${safe}%,external_id.ilike.%${safe}%,id.ilike.%${safe}%`,
-      );
-  }
-  if (f.from) q = q.gte("trade_date", f.from);
-  if (f.to) q = q.lte("trade_date", f.to);
-  if (f.currency) q = q.eq("currency", f.currency);
-  if (f.id) q = q.eq("id", f.id);
-  if (f.productName) q = q.eq("product_name", f.productName);
-  if (f.contractType) q = q.eq("contract_type", f.contractType);
-  if (f.contractNumber) q = q.eq("contract_number", f.contractNumber);
-  if (f.unit) q = q.eq("unit", f.unit);
-  if (f.status) q = q.eq("execution_status", f.status);
-  if (f.minQuantity !== undefined) q = q.gte("quantity", f.minQuantity);
-  if (f.maxQuantity !== undefined) q = q.lte("quantity", f.maxQuantity);
-  if (f.minPrice !== undefined) q = q.gte("price", f.minPrice);
-  if (f.maxPrice !== undefined) q = q.lte("price", f.maxPrice);
-  return q.order(f.sort, { ascending: f.order === "asc" }).order("id");
+  return buildTradeQuery(database(), f);
 }
 export async function listTrades(input: Partial<Filters> = {}) {
   const f = filtersSchema.parse(input),

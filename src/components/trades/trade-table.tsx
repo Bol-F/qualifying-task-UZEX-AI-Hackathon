@@ -112,7 +112,9 @@ export function TradeTable({
           {selected && (
             <div className="detail-body">
               <h2>{selected.product_name}</h2>
-              <span className="status-badge complete">
+              <span
+                className={`status-badge ${selected.execution_status === "Completed" ? "complete" : "pending"}`}
+              >
                 {selected.execution_status}
               </span>
               <dl>

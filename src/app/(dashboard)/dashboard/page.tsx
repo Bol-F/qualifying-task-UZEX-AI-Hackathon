@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import {
@@ -27,6 +27,8 @@ import type { Analytics } from "@/lib/analytics/calculations";
 import type { Trade } from "@/types";
 import { number } from "@/lib/utils";
 import { GuidedDemo } from "@/components/dashboard/guided-demo";
+import { Input } from "@/components/ui/input";
+import { dashboardPoints } from "@/lib/analytics/chart-data";
 import type { demoQuestions } from "@/lib/analytics/demo";
 type Data = Analytics & {
   mode: string;
@@ -35,20 +37,31 @@ type Data = Analytics & {
 };
 export default function Dashboard() {
   const [range, setRange] = useState("all"),
+    [commodity, setCommodity] = useState(""),
+    [from, setFrom] = useState(""),
+    [to, setTo] = useState(""),
+    [catalog, setCatalog] = useState<Data | null>(null),
     [metric, setMetric] = useState<"count" | "value" | "volume">("value"),
     [group, setGroup] = useState("");
-  const query =
-    range === "all"
-      ? ""
-      : range === "oct"
-        ? "?from=2026-10-01&to=2026-10-30"
-        : "?from=2026-10-24&to=2026-10-30";
+  const latestDates = catalog?.daily.slice(-7) ?? [];
+  const params = new URLSearchParams({
+    ...(commodity ? { productName: commodity } : {}),
+    ...(range === "latest" && latestDates.length
+      ? { from: latestDates[0].date, to: latestDates.at(-1)!.date }
+      : {}),
+    ...(range === "custom" && from ? { from } : {}),
+    ...(range === "custom" && to ? { to } : {}),
+  });
+  const query = params.size ? "?" + params : "";
   const { data, error, loading, retry } = useResource<Data>(
     "/api/analytics" + query,
   );
   const recent = useResource<{ rows: Trade[] }>(
     "/api/trades" + (query ? query + "&" : "?") + "pageSize=5",
   );
+  useEffect(() => {
+    if (data && !query) setCatalog(data);
+  }, [data, query]);
   const groups = data
     ? Object.keys(metric === "volume" ? data.quantities : data.values)
     : [];
@@ -72,10 +85,24 @@ export default function Dashboard() {
               onChange={(e) => setRange(e.target.value)}
             >
               <option value="all">All available records</option>
-              <option value="oct">October 2026</option>
-              <option value="week">Oct 24 – 30, 2026</option>
+              <option value="latest" disabled={!catalog?.daily.length}>
+                Latest 7 available trading days
+              </option>
+              <option value="custom">Custom date range</option>
             </select>
           </label>
+          <select
+            aria-label="Dashboard commodity"
+            value={commodity}
+            onChange={(e) => setCommodity(e.target.value)}
+          >
+            <option value="">All commodities</option>
+            {(catalog?.products ?? data?.products ?? []).map((p) => (
+              <option key={p.name} value={p.name}>
+                {p.name}
+              </option>
+            ))}
+          </select>
           <Button asChild>
             <Link href="/assistant">
               <Sparkles />
@@ -84,6 +111,37 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+      {range === "custom" && (
+        <div className="panel dashboard-date-fields">
+          <label>
+            Dashboard from
+            <Input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+            />
+          </label>
+          <label>
+            Dashboard to
+            <Input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+            />
+          </label>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setRange("all");
+              setCommodity("");
+              setFrom("");
+              setTo("");
+            }}
+          >
+            Reset selection
+          </Button>
+        </div>
+      )}
       {loading ? (
         <Loading />
       ) : error ? (
@@ -96,6 +154,12 @@ export default function Dashboard() {
             transition={{ duration: 0.3 }}
           >
             <DataNotice mode={data.mode} latest={data.latest} />
+            <p className="dataset-coverage">
+              Selected coverage: {data.daily[0]?.date ?? "No records"} →{" "}
+              {data.latest ?? "unavailable"} · Source import:{" "}
+              {data.latestImport ?? "unavailable"}. Latest available dates
+              describe this dataset, not a live market feed.
+            </p>
             <GuidedDemo demo={data.demo} mode={data.mode} />
             <div className="kpi-grid">
               {[
@@ -179,15 +243,27 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="activity-summary">
-                  <strong>
+                  <strong
+                    title={
+                      metric === "count"
+                        ? String(data.count)
+                        : (metric === "value" ? data.values : data.quantities)[
+                            selected
+                          ]
+                    }
+                  >
                     {metric === "count"
                       ? number(data.count)
-                      : number(
-                          (metric === "value" ? data.values : data.quantities)[
+                      : (metric === "value" ? data.values : data.quantities)[
                             selected
-                          ] ?? 0,
-                          true,
-                        )}
+                          ] === undefined
+                        ? "Unavailable"
+                        : number(
+                            (metric === "value"
+                              ? data.values
+                              : data.quantities)[selected],
+                            true,
+                          )}
                   </strong>
                   <span>{metric === "count" ? "transactions" : selected}</span>
                   {metric !== "count" && groups.length > 1 && (
@@ -203,11 +279,20 @@ export default function Dashboard() {
                   )}
                   <span className="chart-period">Selected period</span>
                 </div>
-                <ActivityChart
-                  data={data}
-                  metric={metric}
-                  group={metric === "count" ? "transactions" : selected}
-                />
+                {dashboardPoints(data, metric, selected).some(
+                  (p) => p.value !== null,
+                ) ? (
+                  <ActivityChart
+                    data={data}
+                    metric={metric}
+                    group={metric === "count" ? "transactions" : selected}
+                  />
+                ) : (
+                  <div className="chart-empty" role="status">
+                    No compatible chart observations are available. Missing data
+                    is not plotted as zero.
+                  </div>
+                )}
                 <div className="chart-foot">
                   <span>
                     <i />{" "}
@@ -261,17 +346,31 @@ export default function Dashboard() {
                   </span>
                   <div>
                     <strong>
-                      {data.products[0]?.name ?? "No activity"} is among the
-                      most active
+                      {data.count ? (
+                        <>
+                          {data.products[0]?.name ?? "No activity"} is among the
+                          most active
+                        </>
+                      ) : (
+                        "No supported activity observation"
+                      )}
                     </strong>
                     <p>
-                      {data.products[0]?.count ?? 0} transactions, representing{" "}
-                      {data.count
-                        ? Math.round(
-                            ((data.products[0]?.count ?? 0) / data.count) * 100,
-                          )
-                        : 0}
-                      % of all records in this period.
+                      {data.count ? (
+                        <>
+                          {data.products[0]?.count ?? 0} transactions,
+                          representing{" "}
+                          {data.count
+                            ? Math.round(
+                                ((data.products[0]?.count ?? 0) / data.count) *
+                                  100,
+                              )
+                            : 0}
+                          % of all records in this period.
+                        </>
+                      ) : (
+                        "No records match the selection. This does not establish that no trading occurred on the exchange."
+                      )}
                     </p>
                   </div>
                 </div>

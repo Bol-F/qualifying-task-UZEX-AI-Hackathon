@@ -140,6 +140,7 @@ export function selectRows(
 }
 export function workspace(rows: Trade[], request: WorkspaceRequest) {
   const selected = selectRows(rows, request);
+  const selectedMeasure = measure(selected, request);
   const hasComparison = !!(
     request.compareFrom ||
     request.compareTo ||
@@ -195,9 +196,9 @@ export function workspace(rows: Trade[], request: WorkspaceRequest) {
   return {
     selection: request,
     summary: summarize(selected),
-    measure: measure(selected, request),
+    measure: selectedMeasure,
     comparison: hasComparison
-      ? comparison(measure(selected, request), measure(baseline, request))
+      ? comparison(selectedMeasure, measure(baseline, request))
       : null,
     series,
     breakdown: breakdown.slice(0, 10),
@@ -224,9 +225,9 @@ export function workspace(rows: Trade[], request: WorkspaceRequest) {
         : [
             "No records match this selection. This does not establish that no exchange trading occurred.",
           ]),
-      ...(measure(selected, request).excluded
+      ...(selectedMeasure.excluded
         ? [
-            `${measure(selected, request).excluded} records are not eligible for the selected metric.`,
+            `${selectedMeasure.excluded} records are not eligible for the selected metric.`,
           ]
         : []),
       "Charts omit unavailable observations; gaps do not imply zero trading.",

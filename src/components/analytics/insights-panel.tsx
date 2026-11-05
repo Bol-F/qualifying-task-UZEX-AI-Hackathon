@@ -5,6 +5,7 @@ import { Sparkles, ArrowUpRight, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WorkspaceData } from "@/lib/analytics/service";
 import type { explainFacts } from "@/lib/ai/report-explanations";
+import { sourceLink } from "@/lib/analytics/source-links";
 type Commentary = Awaited<ReturnType<typeof explainFacts>>;
 export function InsightsPanel({ data }: { data: WorkspaceData }) {
   const [result, setResult] = useState<{
@@ -68,18 +69,7 @@ export function InsightsPanel({ data }: { data: WorkspaceData }) {
                 Coverage {f.coverage.from} → {f.coverage.to} ·{" "}
                 {f.coverage.records} records
               </span>
-              <Link
-                href={
-                  "/trades?" +
-                  new URLSearchParams({
-                    ...(data.selection.from
-                      ? { from: data.selection.from }
-                      : {}),
-                    ...(data.selection.to ? { to: data.selection.to } : {}),
-                    ...f.filters,
-                  })
-                }
-              >
+              <Link href={sourceLink(view.selection, f.filters)}>
                 Inspect supporting trades
                 <ArrowUpRight size={12} />
               </Link>

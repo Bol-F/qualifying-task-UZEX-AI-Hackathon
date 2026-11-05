@@ -34,6 +34,10 @@ export function GuidedDemo({
         <div>
           <h2>Your first insight starts here.</h2>
           <p>
+            UZEX Insight AI turns exchange records into searchable analytics,
+            bilingual answers and source-backed reports.
+          </p>
+          <p>
             {mode === "demo"
               ? "Explore a clearly labeled synthetic dataset."
               : "Explore your imported source records."}{" "}

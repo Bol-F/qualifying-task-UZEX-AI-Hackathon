@@ -2,9 +2,13 @@
 
 A Next.js financial analytics application with an evidence-grounded Uzbek / Russian assistant. The application starts without credentials in **DEMO DATA MODE**. Its 184 deterministic, synthetic records are stored in `src/lib/db/demo.ts`; none represent official UZEX transactions. No official live feed is claimed.
 
+Explore stored transactions, compare commodities and trading periods, ask bilingual questions with inspectable evidence, investigate transparent statistical patterns, and print an analytics briefing. The first-visit guide supplies questions adapted to actual available records.
+
+Submission package: [architecture](ARCHITECTURE.md), [three-minute demo and working feature checklist](DEMO_GUIDE.md), [release audit and test results](TEST_REPORT.md). Screenshots under `docs/screenshots` show the real application and retain synthetic-data labels.
+
 ## Run
 
-Requires Node.js 22.13+ and npm (Node.js 24 LTS recommended).
+Requires Node.js 24 and npm. Google Chrome is required for browser tests.
 
 ```powershell
 npm ci
@@ -12,7 +16,7 @@ if (!(Test-Path .env.local)) { Copy-Item .env.example .env.local }
 npm run dev
 ```
 
-Open http://localhost:3000. Routes: `/dashboard`, `/assistant`, `/trades`, `/analytics`, `/reports`. `npm run build` and `npm start` run the production build. Checks: `npm run lint`, `npm run typecheck`, `npm test`, and `npm run test:e2e`. Playwright launches an isolated server on port 3100 with demo data and local tools; it does not call paid APIs. Installed Chrome is required. Stop other Next.js development servers before E2E tests or a build: Next.js shares generated type files even when output directories differ. See [Phase 3 deployment and demonstration guide](docs/phase-3.md).
+Open http://localhost:3000. Routes: `/dashboard`, `/assistant`, `/trades`, `/analytics`, `/reports`. `npm run build` and `npm start` run the production build. Checks: `npm run lint`, `npm run typecheck`, `npm test`, and `npm run test:e2e`. Playwright builds and launches an isolated **production** server on port 3100 with demo data and local tools; it does not call paid APIs. Stop other Next.js development servers before E2E tests or a build: Next.js shares generated type files even when output directories differ. See [deployment instructions](docs/phase-3.md) and the [current release report](TEST_REPORT.md).
 
 ## Live imported records
 

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Search,
   Download,
@@ -23,7 +23,11 @@ export default function Trades() {
     [to, setTo] = useState(""),
     [min, setMin] = useState(""),
     [max, setMax] = useState(""),
-    [currency, setCurrency] = useState("UZS"),
+    [currency, setCurrency] = useState(""),
+    [priceUnit, setPriceUnit] = useState(""),
+    [exactId, setExactId] = useState(""),
+    [sourceProducts, setSourceProducts] = useState<string[]>([]),
+    [exporting, setExporting] = useState(false),
     [sort, setSort] = useState("trade_date"),
     [order, setOrder] = useState("desc"),
     [page, setPage] = useState(1),
@@ -31,10 +35,12 @@ export default function Trades() {
     [exactProduct, setExactProduct] = useState(""),
     [unit, setUnit] = useState(""),
     [contractType, setContractType] = useState("");
+  const searchInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const value = new URLSearchParams(window.location.search).get("search");
     if (value) setSearch(value);
     const p = new URLSearchParams(window.location.search);
+    if (p.has("product")) setSourceProducts(p.getAll("product").slice(0, 3));
     if (p.get("from")) setFrom(p.get("from")!);
     if (p.get("to")) setTo(p.get("to")!);
     if (p.get("productName")) {
@@ -44,6 +50,28 @@ export default function Trades() {
     if (p.get("currency")) setCurrency(p.get("currency")!);
     if (p.get("unit")) setUnit(p.get("unit")!);
     if (p.get("contractType")) setContractType(p.get("contractType")!);
+    if (p.get("priceUnit")) setPriceUnit(p.get("priceUnit")!);
+    if (p.get("id")) {
+      setExactId(p.get("id")!);
+      setSearch(p.get("id")!);
+    }
+    function shortcut(event: KeyboardEvent) {
+      if (
+        event.key === "/" &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !(
+          event.target instanceof HTMLElement &&
+          (event.target.matches("input,textarea,select") ||
+            event.target.isContentEditable)
+        )
+      ) {
+        event.preventDefault();
+        searchInput.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", shortcut);
+    return () => window.removeEventListener("keydown", shortcut);
   }, []);
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -53,11 +81,13 @@ export default function Trades() {
     return () => clearTimeout(timer);
   }, [search]);
   const params = new URLSearchParams({
-    search: exactProduct ? "" : debounced,
+    search: exactProduct || exactId ? "" : debounced,
+    ...(exactId ? { id: exactId } : {}),
     ...(exactProduct ? { productName: exactProduct } : {}),
     ...(unit ? { unit } : {}),
     ...(contractType ? { contractType } : {}),
-    ...(currency && unit ? { currency } : {}),
+    ...(currency ? { currency } : {}),
+    ...(priceUnit ? { priceUnit } : {}),
     page: String(page),
     pageSize: "12",
     sort,
@@ -67,6 +97,7 @@ export default function Trades() {
     ...(min ? { minPrice: min, currency } : {}),
     ...(max ? { maxPrice: max, currency } : {}),
   });
+  sourceProducts.forEach((product) => params.append("product", product));
   const { data, error, loading, retry } = useResource<{
     rows: Trade[];
     total: number;
@@ -75,6 +106,10 @@ export default function Trades() {
   function clear() {
     setSearch("");
     setExactProduct("");
+    setExactId("");
+    setSourceProducts([]);
+    setCurrency("");
+    setPriceUnit("");
     setUnit("");
     setContractType("");
     setFrom("");
@@ -86,6 +121,7 @@ export default function Trades() {
     setPage(1);
   }
   async function download() {
+    setExporting(true);
     try {
       const response = await fetch("/api/trades?" + params + "&export=csv");
       if (!response.ok) throw new Error("Export failed");
@@ -98,6 +134,8 @@ export default function Trades() {
       toast.success("Filtered transactions exported");
     } catch {
       toast.error("Unable to export. Check your filters and try again.");
+    } finally {
+      setExporting(false);
     }
   }
   return (
@@ -107,22 +145,35 @@ export default function Trades() {
           <h1>Trade explorer</h1>
           <p>Every transaction. Every detail. One clear view.</p>
         </div>
-        <Button variant="outline" onClick={download}>
+        <Button
+          variant="outline"
+          onClick={download}
+          disabled={loading || !!error || exporting}
+        >
           <Download />
-          Export CSV
+          {exporting ? "Exporting…" : "Export CSV"}
         </Button>
       </div>
       <DataNotice mode={data?.mode ?? "unknown"} />
+      {sourceProducts.length > 0 && (
+        <p className="dataset-coverage">
+          Selected commodities: {sourceProducts.join(" · ")}. Clear filters to
+          explore all records.
+        </p>
+      )}
       <section className="panel explorer">
         <div className="explorer-toolbar">
           <div className="search-field">
             <Search size={17} />
             <Input
               aria-label="Search trades"
+              ref={searchInput}
               placeholder="Search commodity, transaction or contract…"
               value={search}
               onChange={(e) => {
                 setExactProduct("");
+                setExactId("");
+                setSourceProducts([]);
                 setSearch(e.target.value);
               }}
             />
@@ -186,14 +237,19 @@ export default function Trades() {
               />
             </label>
             <label>
-              Price currency
+              Currency
               <select
                 value={currency}
                 onChange={(e) => {
                   setCurrency(e.target.value);
+                  if (!e.target.value) {
+                    setMin("");
+                    setMax("");
+                  }
                   setPage(1);
                 }}
               >
+                <option value="">All currencies</option>
                 <option>UZS</option>
                 <option>USD</option>
                 <option>EUR</option>
@@ -201,10 +257,52 @@ export default function Trades() {
               </select>
             </label>
             <label>
+              Quoted price basis
+              <Input
+                value={priceUnit}
+                placeholder="Any basis (e.g. t)"
+                maxLength={30}
+                onChange={(e) => {
+                  setPriceUnit(e.target.value);
+                  if (!e.target.value) {
+                    setMin("");
+                    setMax("");
+                  }
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label>
+              Reported quantity unit
+              <Input
+                value={unit}
+                placeholder="Any unit (e.g. t)"
+                maxLength={30}
+                onChange={(e) => {
+                  setUnit(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label>
+              Contract type
+              <Input
+                value={contractType}
+                placeholder="All types"
+                maxLength={64}
+                onChange={(e) => {
+                  setContractType(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </label>
+            <label>
               Minimum unit price
               <Input
                 type="number"
                 min="0"
+                step="any"
+                disabled={!currency || !priceUnit}
                 value={min}
                 onChange={(e) => {
                   setMin(e.target.value);
@@ -217,6 +315,8 @@ export default function Trades() {
               <Input
                 type="number"
                 min="0"
+                step="any"
+                disabled={!currency || !priceUnit}
                 value={max}
                 onChange={(e) => {
                   setMax(e.target.value);
@@ -226,12 +326,42 @@ export default function Trades() {
             </label>
           </div>
         )}
+        {(currency || priceUnit || unit || contractType || exactId) && (
+          <div className="active-trade-filters" role="status">
+            {[
+              currency && `Currency: ${currency}`,
+              priceUnit && `Price basis: ${priceUnit}`,
+              unit && `Quantity unit: ${unit}`,
+              contractType && `Contract: ${contractType}`,
+              exactId && `Record: ${exactId}`,
+            ]
+              .filter(Boolean)
+              .map((label) => (
+                <span key={String(label)}>{label}</span>
+              ))}
+          </div>
+        )}
+        {advanced && (
+          <p className="filter-help">
+            Price ranges require a currency and quoted price basis. Sorting
+            retains reported units; values with different units are not directly
+            comparable.
+          </p>
+        )}
         <div className="results-bar">
           <span>
             <strong>{data?.total ?? "—"}</strong> transactions{" "}
             <span className="muted">
               ·{" "}
-              {search || from || to || min || max
+              {search ||
+              from ||
+              to ||
+              min ||
+              max ||
+              currency ||
+              unit ||
+              priceUnit ||
+              contractType
                 ? "Filtered results"
                 : "All available records"}
             </span>

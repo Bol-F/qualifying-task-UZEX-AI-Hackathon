@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { chatRequestSchema } from "@/lib/ai/contracts";
 import { authorize, rateLimit } from "@/lib/utils/api";
 import { createGeminiModel } from "@/lib/ai/gemini";
-import { createLocalModel,deterministicFollowup } from "@/lib/ai/local-model";
+import { createLocalModel, deterministicFollowup } from "@/lib/ai/local-model";
 import { runAgent } from "@/lib/ai/agent";
 import { createTradeStore } from "@/lib/ai/store";
 import { ConversationMemory } from "@/lib/ai/memory";
@@ -112,9 +112,15 @@ export async function POST(req: NextRequest) {
           input.regenerate && session.lastTurn
             ? session.lastTurn.context
             : session.context;
-        const model = deterministicFollowup(question,base)??(geminiEnabled()
-          ? await createGeminiModel(signal)
-          : createLocalModel(question, base, process.env.AI_MODE === "local"));
+        const model =
+          deterministicFollowup(question, base) ??
+          (geminiEnabled()
+            ? await createGeminiModel(signal)
+            : createLocalModel(
+                question,
+                base,
+                process.env.AI_MODE === "local",
+              ));
         const result = await runAgent(
           { question, language, regenerate: input.regenerate },
           session,

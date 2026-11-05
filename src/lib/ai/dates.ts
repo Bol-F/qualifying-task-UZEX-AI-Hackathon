@@ -1,4 +1,5 @@
 import { dateSchema } from "@/lib/validations/trades";
+import { AgentError } from "./errors";
 export const tashkentToday = (now = new Date()) =>
   new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Tashkent",
@@ -41,7 +42,11 @@ const months: Record<string, number> = {
 export function interpretDates(text: string, today = tashkentToday()) {
   const lower = text.toLowerCase();
   const iso = lower.match(/\d{4}-\d{2}-\d{2}/g);
-  if (iso) return iso.filter((v) => dateSchema.safeParse(v).success);
+  if (iso) {
+    if (iso.some((v) => !dateSchema.safeParse(v).success))
+      throw new AgentError("INVALID_REQUEST", 400);
+    return iso;
+  }
   if (/bugun|бугун|сегодня|today/.test(lower)) return [today];
   if (/kecha|кеча|вчера|yesterday/.test(lower)) return [shiftDate(today, -1)];
   const found = lower.match(/(\d{1,2})[\s-]+([a-zа-яё]+)(?:\s+(20\d{2}))?/u);

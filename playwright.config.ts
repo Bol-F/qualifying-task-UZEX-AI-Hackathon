@@ -15,9 +15,9 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: "npm run dev -- --port 3100",
+        command: "node scripts/start-test-server.mjs",
         url: "http://localhost:3100/api/health",
-        timeout: 120000,
+        timeout: 180000,
         reuseExistingServer: false,
         env: {
           AI_MODE: "local",

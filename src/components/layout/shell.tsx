@@ -30,8 +30,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
     [collapsed, setCollapsed] = useState(false);
   return (
     <div className={cn("app-shell", collapsed && "collapsed")}>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <aside className="sidebar">
-        <Link href="/dashboard" className="brand">
+        <Link
+          href="/dashboard"
+          className="brand"
+          aria-label="UZEX Insight AI home"
+        >
           <span className="brand-mark">
             <Layers size={25} />
           </span>
@@ -51,12 +58,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <ChevronDown size={14} />
         </div>
         <div className="nav-caption">WORKSPACE</div>
-        <nav>
+        <nav aria-label="Main navigation">
           {nav.map((n) => (
             <Link
               key={n.href}
               href={n.href}
               title={n.label}
+              aria-current={path === n.href ? "page" : undefined}
+              aria-label={n.label}
               className={cn("nav-link", path === n.href && "active")}
             >
               <n.icon size={18} />
@@ -121,7 +130,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
         </header>
-        <main>{children}</main>
+        <main id="main-content" tabIndex={-1}>
+          {children}
+        </main>
         <footer>
           <span>
             UZEX Insight AI <span className="footer-dot">·</span> Commodity

@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import type { Analytics } from "@/lib/analytics/calculations";
 import { number } from "@/lib/utils";
+import { dashboardPoints } from "@/lib/analytics/chart-data";
 const colors = [
   "#15d6a0",
   "#3b82f6",
@@ -44,17 +45,7 @@ export function ActivityChart({
   metric: "count" | "value" | "volume";
   group: string;
 }) {
-  const points = data.daily.map((d) => ({
-    date: d.date.slice(5),
-    value:
-      metric === "count"
-        ? d.count
-        : Number(
-            metric === "value"
-              ? (d.values[group] ?? 0)
-              : (d.quantities[group] ?? 0),
-          ),
-  }));
+  const points = dashboardPoints(data, metric, group);
   return (
     <ResponsiveContainer width="100%" height={210}>
       <AreaChart
@@ -74,6 +65,7 @@ export function ActivityChart({
         />
         <XAxis
           dataKey="date"
+          tickFormatter={(v) => String(v).slice(5)}
           tick={{ fill: "#7f91aa", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
@@ -85,11 +77,12 @@ export function ActivityChart({
           tickLine={false}
           tickFormatter={(v) => number(v, true)}
           width={54}
+          allowDecimals={metric !== "count"}
         />
         <Tooltip
           {...tooltip}
           formatter={(v) => [
-            `${number(String(v))} ${group}`,
+            v === null ? "Unavailable" : `${number(String(v))} ${group}`,
             metric === "count"
               ? "Transactions"
               : metric === "value"
@@ -99,6 +92,7 @@ export function ActivityChart({
         />
         <Area
           isAnimationActive={false}
+          connectNulls={false}
           type="monotone"
           dataKey="value"
           stroke="#15d6a0"
@@ -141,7 +135,7 @@ export function CommodityChart({ data }: { data: Analytics }) {
       <div className="chart-legend">
         {data.products.map((p, i) => (
           <div key={p.name}>
-            <span style={{ background: colors[i] }} />
+            <span style={{ background: colors[i % colors.length] }} />
             <label>{p.name}</label>
             <strong>
               {data.count ? Math.round((p.count / data.count) * 100) : 0}%

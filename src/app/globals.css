@@ -91,6 +91,75 @@ input,
 textarea {
   color: var(--foreground);
 }
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  transform: translateY(-200%);
+  padding: 12px 18px;
+  background: #15d6a0;
+  color: #0b1120;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+.dashboard-date-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 18px;
+  align-items: flex-end;
+}
+.dashboard-date-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  color: #94a3b8;
+  min-width: 150px;
+  flex: 1;
+}
+.dataset-coverage {
+  margin: 10px 0 20px;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.chart-empty {
+  min-height: 180px;
+  display: grid;
+  place-content: center;
+  padding: 24px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+.active-trade-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 19px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: #99b2c9;
+  overflow-wrap: anywhere;
+}
+.active-trade-filters span {
+  border: 1px solid var(--border);
+  padding: 5px 8px;
+  border-radius: 4px;
+  max-width: 100%;
+}
+.filter-help {
+  padding: 0 19px 15px;
+  color: #94a3b8;
+  font-size: 10px;
+  line-height: 1.7;
+}
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 4px;

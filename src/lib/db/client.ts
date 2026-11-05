@@ -1,7 +1,9 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import { databaseFetch } from "./transport";
+import { parseDataMode } from "./mode";
 export function dataMode(): "demo" | "live" {
-  return process.env.DATA_MODE === "live" ? "live" : "demo";
+  return parseDataMode(process.env.DATA_MODE);
 }
 export function database() {
   const url = process.env.SUPABASE_URL,
@@ -10,8 +12,7 @@ export function database() {
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
-      fetch: (url, init) =>
-        fetch(url, { ...init, signal: AbortSignal.timeout(15000) }),
+      fetch: databaseFetch,
     },
   });
 }

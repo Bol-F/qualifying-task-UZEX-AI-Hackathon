@@ -106,6 +106,13 @@ export async function executeTool(
     ...((args.filters ?? {}) as QueryScope),
   });
   checkScope(scope);
+  // Price filters refer to the explicitly selected quoted denominator.
+  const readScope = () => ({
+    ...scope,
+    ...(scope.minPrice !== undefined || scope.maxPrice !== undefined
+      ? { priceUnit: scope.unit }
+      : {}),
+  });
   let rows: Trade[] = [],
     metrics: Evidence["metrics"] = [],
     points: Evidence["points"] = [],
@@ -121,13 +128,30 @@ export async function executeTool(
     rows = await store.read({ id: String(args.id) }, signal);
     matched = rows.length;
   } else if (name === "compare_trading_periods") {
-    const a = args.periodA as { from: string; to: string } | undefined;
+    let a = args.periodA as { from: string; to: string } | undefined;
     let b = args.periodB as { from: string; to: string } | undefined;
     const commodities = args.commodities as string[] | undefined;
+    if (args.lastTwoAvailableDays) {
+      const available = await store.read(
+        { ...readScope(), from: undefined },
+        signal,
+      );
+      const dates = [...new Set(available.map((r) => r.trade_date))].sort();
+      const latest = dates.at(-1),
+        previous = dates.at(-2);
+      a = latest ? { from: latest, to: latest } : undefined;
+      b = previous ? { from: previous, to: previous } : undefined;
+      args.periodA = a;
+      args.periodB = b;
+      if (a) {
+        scope.from = a.from;
+        scope.to = a.to;
+      }
+    }
     if (args.previousAvailableDay) {
       if (!a || a.from !== a.to) throw new AgentError("INVALID_REQUEST", 400);
       const available = await store.read(
-        { ...scope, from: undefined, to: undefined },
+        { ...readScope(), from: undefined, to: undefined },
         signal,
       );
       const date = [...new Set(available.map((t) => t.trade_date))]
@@ -142,13 +166,20 @@ export async function executeTool(
         );
     }
     const first = await store.read(
-      { ...scope, ...a, ...(commodities ? { search: commodities[0] } : {}) },
+      {
+        ...readScope(),
+        ...a,
+        ...(commodities ? { search: commodities[0] } : {}),
+      },
       signal,
     );
     const second = commodities
-      ? await store.read({ ...scope, ...a, search: commodities[1] }, signal)
+      ? await store.read(
+          { ...readScope(), ...a, search: commodities[1] },
+          signal,
+        )
       : b
-        ? await store.read({ ...scope, ...b }, signal)
+        ? await store.read({ ...readScope(), ...b }, signal)
         : [];
     const metricUnit =
       args.metric === "count"
@@ -192,7 +223,13 @@ export async function executeTool(
       warnings.push(
         "Missing comparison observations are unavailable, not zero.",
       );
-    rows = [...first, ...second];
+    // Both sides remain inspectable; overlapping periods never duplicate source records.
+    const interleaved = first.flatMap((row, i) =>
+      second[i] ? [row, second[i]] : [row],
+    );
+    rows = [
+      ...new Map([...interleaved, ...second].map((r) => [r.id, r])).values(),
+    ];
     calculationRows = rows;
     matched = new Set(rows.map((r) => r.id)).size;
     if (a && b) {
@@ -200,7 +237,7 @@ export async function executeTool(
       args.periodB = b;
     }
   } else {
-    rows = await store.read(scope, signal);
+    rows = await store.read(readScope(), signal);
     calculationRows = rows;
     matched = rows.length;
     const stats = summarize(rows);

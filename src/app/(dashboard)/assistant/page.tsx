@@ -194,7 +194,11 @@ export default function Assistant() {
               </div>
             ) : (
               messages.map((m, i) => (
-                <div key={i} className={`message ${m.role}`}>
+                <div
+                  key={i}
+                  className={`message ${m.role}`}
+                  lang={m.answer?.language}
+                >
                   <div className="message-avatar">
                     {m.role === "assistant" ? <Sparkles size={16} /> : "UZ"}
                   </div>
@@ -204,7 +208,21 @@ export default function Assistant() {
                       <small>{m.engine}</small>
                     </div>
                     <div className="markdown">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        disallowedElements={["img"]}
+                        components={{
+                          a: ({ children, ...props }) => (
+                            <a
+                              {...props}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {children}
+                            </a>
+                          ),
+                        }}
+                      >
                         {m.content}
                       </ReactMarkdown>
                     </div>
@@ -270,6 +288,9 @@ export default function Assistant() {
                 >
                   <RotateCcw />
                   Retry
+                </Button>
+                <Button variant="ghost" size="sm" onClick={newChat}>
+                  New conversation
                 </Button>
               </div>
             )}
