@@ -4,6 +4,7 @@ import type { Trade } from "@/types";
 import { dateSchema } from "@/lib/validations/trades";
 import { summarize } from "./calculations";
 import { AgentError } from "@/lib/ai/errors";
+import { hasValue, isCancelled, tradeValue } from "./accounting";
 const D = Decimal.clone({ precision: 64 });
 export const workspaceSchema = z
   .object({
@@ -54,10 +55,8 @@ export function measure(
     request.metric === "count"
       ? true
       : request.metric === "value"
-        ? !!request.currency &&
-          t.currency === request.currency &&
-          t.price_unit === t.unit
-        : !!request.unit && t.unit === request.unit,
+        ? !!request.currency && t.currency === request.currency && hasValue(t)
+        : !!request.unit && t.unit === request.unit && !isCancelled(t),
   );
   const unit =
     request.metric === "count"
@@ -74,7 +73,7 @@ export function measure(
             request.metric === "count"
               ? 1
               : request.metric === "value"
-                ? new D(t.price).times(t.quantity)
+                ? tradeValue(t)
                 : t.quantity,
           ),
         new D(0),
@@ -217,7 +216,7 @@ export function workspace(rows: Trade[], request: WorkspaceRequest) {
       request.metric === "count"
         ? "Count of matching stored transaction records."
         : request.metric === "value"
-          ? `Sum of price × quantity in ${request.currency}; only known, matching price and quantity units.`
+          ? `Sum of exact source amounts (otherwise price × quantity) in ${request.currency}; matching units, cancelled records excluded.`
           : `Reported quantity in ${request.unit} only. No cross-unit conversion.`,
     warnings: [
       ...(selected.length

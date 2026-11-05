@@ -109,6 +109,9 @@ export function ReportBuilder() {
           {tr(" Print / Save PDF ")}
         </Button>
       </div>
+      {!report && available?.mode === "local" && (
+        <DataNotice mode="local" latest={available.coverage.to} />
+      )}
       <section className="panel report-controls no-print">
         {optionsError && (
           <p className="workspace-warning" role="status">

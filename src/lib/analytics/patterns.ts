@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import type { Trade } from "@/types";
 import { shiftDate } from "@/lib/ai/dates";
 import { summarize } from "./calculations";
+import { hasValue, tradeValue } from "./accounting";
 export type Pattern = {
   id: string;
   type: "Statistical observation" | "Data-quality warning";
@@ -20,7 +21,7 @@ export function detectPatterns(rows: Trade[]) {
   const groups = new Map<string, Trade[]>(),
     ids = new Map<string, Trade[]>();
   for (const t of rows) {
-    if (t.currency && t.price_unit === t.unit) {
+    if (hasValue(t)) {
       const key = `${t.currency} / ${t.unit}`;
       const group = groups.get(key);
       if (group) group.push(t);
@@ -35,14 +36,12 @@ export function detectPatterns(rows: Trade[]) {
   }
   for (const [group, trades] of groups) {
     if (trades.length < 8) continue;
-    const values = trades
-      .map((t) => new Decimal(t.price).times(t.quantity))
-      .sort((a, b) => a.comparedTo(b));
+    const values = trades.map(tradeValue).sort((a, b) => a.comparedTo(b));
     const q1 = values[Math.floor((values.length - 1) * 0.25)],
       q3 = values[Math.floor((values.length - 1) * 0.75)],
       threshold = q3.plus(q3.minus(q1).times(3));
     for (const t of trades)
-      if (new Decimal(t.price).times(t.quantity).gt(threshold))
+      if (tradeValue(t).gt(threshold))
         add({
           type: "Statistical observation",
           title: "Large reported transaction value",

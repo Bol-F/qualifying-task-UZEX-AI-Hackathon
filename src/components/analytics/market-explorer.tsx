@@ -63,6 +63,11 @@ export function MarketExplorer() {
     "/api/analytics/explore?" + params,
   );
   const data = resource.data;
+  const [productSearch, setProductSearch] = useState("");
+  const matches = (data?.options.products ?? []).filter((p) =>
+    p.toLowerCase().includes(productSearch.toLowerCase()),
+  );
+  const visibleProducts = [...new Set([...products, ...matches.slice(0, 40)])];
   function changeMetric(value: typeof metric) {
     setMetric(value);
     if (value === "count") {
@@ -144,7 +149,7 @@ export function MarketExplorer() {
             {tr(" From date ")}
             <Input
               type="date"
-              value={from}
+              value={from || data?.selection.from || ""}
               onChange={(e) => setFrom(e.target.value)}
             />
           </label>
@@ -152,7 +157,7 @@ export function MarketExplorer() {
             {tr(" To date ")}
             <Input
               type="date"
-              value={to}
+              value={to || data?.selection.to || ""}
               onChange={(e) => setTo(e.target.value)}
             />
           </label>
@@ -219,7 +224,26 @@ export function MarketExplorer() {
               )}
             </span>
           </legend>
-          {data?.options.products.map((p) => (
+          {(data?.options.products.length ?? 0) > 40 && (
+            <div className="commodity-search">
+              <Input
+                aria-label={tr("Search commodities")}
+                placeholder={tr("Search commodities")}
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+              />
+              <small>
+                {tr(
+                  "Showing {shown} of {total} commodities. Search to find others.",
+                  {
+                    shown: Math.min(40, matches.length),
+                    total: matches.length,
+                  },
+                )}
+              </small>
+            </div>
+          )}
+          {visibleProducts.map((p) => (
             <label key={p}>
               <input
                 type="checkbox"

@@ -13,11 +13,18 @@ import {
 import { toolSchemas, type ToolName } from "./registry";
 import { retrieveKnowledge } from "./knowledge";
 import { AgentError } from "./errors";
+import { hasValue, tradeValue } from "@/lib/analytics/accounting";
+import { shiftDate } from "./dates";
 const D = Decimal.clone({ precision: 64 });
 export interface TradeStore {
-  mode: "demo" | "live";
+  mode: "demo" | "live" | "local";
   read(filters: Partial<Filters>, signal: AbortSignal): Promise<Trade[]>;
   coverage(signal: AbortSignal): Promise<Coverage>;
+  dates?(
+    filters: Partial<Filters>,
+    before?: string,
+    limit?: number,
+  ): Promise<string[]>;
 }
 export type AgentContext = {
   filters: QueryScope;
@@ -79,9 +86,7 @@ function metricValue(rows: Trade[], metric: string, scope: QueryScope) {
     if (!scope.currency) throw new AgentError("INVALID_REQUEST", 400);
     if (
       rows.length &&
-      !rows.some(
-        (t) => t.currency === scope.currency && t.price_unit === t.unit,
-      )
+      !rows.some((t) => t.currency === scope.currency && hasValue(t))
     )
       throw new AgentError("DATA_UNAVAILABLE", 422);
     return { value: stats.values[scope.currency] ?? "0", unit: scope.currency };
@@ -119,6 +124,52 @@ export async function executeTool(
     unit = "transactions";
   const warnings: string[] = [];
   const coverage = await store.coverage(signal);
+  if (
+    name === "get_transaction_trends" &&
+    args.lastTradingDays &&
+    store.dates
+  ) {
+    const available = await store.dates(
+      readScope(),
+      undefined,
+      Number(args.lastTradingDays),
+    );
+    if (available.length) {
+      scope.from = available.at(-1);
+      scope.to = available[0];
+    }
+  }
+  if (
+    store.mode === "local" &&
+    !scope.from &&
+    !scope.to &&
+    coverage.to &&
+    ![
+      "get_trade_details",
+      "explain_exchange_term",
+      "compare_trading_periods",
+    ].includes(name)
+  ) {
+    scope.from = shiftDate(coverage.to, -29);
+    scope.to = coverage.to;
+    warnings.push(
+      lang === "ru"
+        ? `Период не указан: выбран последний доступный месяц, ${scope.from} — ${scope.to}. Для другого периода укажите даты.`
+        : `Davr ko‘rsatilmagan: oxirgi mavjud oy tanlandi, ${scope.from} — ${scope.to}. Boshqa davr uchun sanalarni kiriting.`,
+    );
+  }
+  if (coverage.missingYears?.length)
+    warnings.push(
+      lang === "ru"
+        ? `В исходном наборе отсутствуют годы: ${coverage.missingYears.join(", ")}. Это пропуск данных, не нулевая активность.`
+        : `Manba to‘plamida yillar yo‘q: ${coverage.missingYears.join(", ")}. Bu ma’lumot bo‘shlig‘i, nol faollik emas.`,
+    );
+  if (coverage.missingBrokers)
+    warnings.push(
+      lang === "ru"
+        ? "Справочник брокеров отсутствует. Доступны только их исходные коды."
+        : "Brokerlar ma’lumotnomasi yo‘q. Faqat manbadagi kodlar mavjud.",
+    );
   let knowledge: Evidence["knowledge"];
   let matched = 0;
   let calculationRows: Trade[] = [];
@@ -132,11 +183,14 @@ export async function executeTool(
     let b = args.periodB as { from: string; to: string } | undefined;
     const commodities = args.commodities as string[] | undefined;
     if (args.lastTwoAvailableDays) {
-      const available = await store.read(
-        { ...readScope(), from: undefined },
-        signal,
-      );
-      const dates = [...new Set(available.map((r) => r.trade_date))].sort();
+      const available = store.dates
+        ? []
+        : await store.read({ ...readScope(), from: undefined }, signal);
+      const dates = store.dates
+        ? (
+            await store.dates({ ...readScope(), from: undefined }, undefined, 2)
+          ).sort()
+        : [...new Set(available.map((r) => r.trade_date))].sort();
       const latest = dates.at(-1),
         previous = dates.at(-2);
       a = latest ? { from: latest, to: latest } : undefined;
@@ -150,14 +204,24 @@ export async function executeTool(
     }
     if (args.previousAvailableDay) {
       if (!a || a.from !== a.to) throw new AgentError("INVALID_REQUEST", 400);
-      const available = await store.read(
-        { ...readScope(), from: undefined, to: undefined },
-        signal,
-      );
-      const date = [...new Set(available.map((t) => t.trade_date))]
-        .filter((d) => d < a.from)
-        .sort()
-        .at(-1);
+      const available = store.dates
+        ? []
+        : await store.read(
+            { ...readScope(), from: undefined, to: undefined },
+            signal,
+          );
+      const date = store.dates
+        ? (
+            await store.dates(
+              { ...readScope(), from: undefined, to: undefined },
+              a.from,
+              1,
+            )
+          )[0]
+        : [...new Set(available.map((t) => t.trade_date))]
+            .filter((d) => d < a.from)
+            .sort()
+            .at(-1);
       b = date ? { from: date, to: date } : undefined;
       args.periodB = b;
       if (!b)
@@ -257,17 +321,17 @@ export async function executeTool(
         rows = rows
           .filter(
             (t) =>
-              (sort !== "value" || (t.price_unit === t.unit && !!t.currency)) &&
+              (sort !== "value" || hasValue(t)) &&
               (sort !== "price" || t.price_unit === scope.unit),
           )
           .sort((a, b) => {
             const av =
                 sort === "value"
-                  ? new D(a.price).times(a.quantity)
+                  ? tradeValue(a)
                   : new D(a[sort === "price" ? "price" : "quantity"]),
               bv =
                 sort === "value"
-                  ? new D(b.price).times(b.quantity)
+                  ? tradeValue(b)
                   : new D(b[sort === "price" ? "price" : "quantity"]);
             return (
               av.comparedTo(bv) * (args.order === "asc" ? 1 : -1) ||
@@ -308,9 +372,12 @@ export async function executeTool(
     if (name === "get_top_commodities") {
       const groups = new Map<string, Trade[]>();
       for (const t of rows.filter(
-        (t) => args.metric !== "value" || t.price_unit === t.unit,
-      ))
-        groups.set(t.product_name, [...(groups.get(t.product_name) ?? []), t]);
+        (t) => args.metric !== "value" || hasValue(t),
+      )) {
+        const group = groups.get(t.product_name);
+        if (group) group.push(t);
+        else groups.set(t.product_name, [t]);
+      }
       points = [...groups]
         .map(([label, records]) => ({
           label,
@@ -335,11 +402,11 @@ export async function executeTool(
         }
       }
       const groups = new Map<string, Trade[]>();
-      for (const row of rows)
-        groups.set(row.trade_date, [
-          ...(groups.get(row.trade_date) ?? []),
-          row,
-        ]);
+      for (const row of rows) {
+        const group = groups.get(row.trade_date);
+        if (group) group.push(row);
+        else groups.set(row.trade_date, [row]);
+      }
       points = [...groups]
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([label, records]) => ({
@@ -364,8 +431,8 @@ export async function executeTool(
     if (stats.excluded)
       warnings.push(
         lang === "ru"
-          ? `${stats.excluded} записей исключены из расчёта стоимости: неизвестна валюта или не совпадает база цены.`
-          : `${stats.excluded} yozuv qiymatdan chiqarildi: valyuta noma’lum yoki narx bazasi mos emas.`,
+          ? `${stats.excluded} записей исключены из расчёта стоимости: аннулированы, неизвестна валюта или не совпадает база цены.`
+          : `${stats.excluded} yozuv qiymatdan chiqarildi: bekor qilingan, valyuta noma’lum yoki narx bazasi mos emas.`,
       );
   }
   if (!matched && !knowledge)
@@ -423,6 +490,9 @@ export async function executeTool(
             r.unit,
             r.price_unit,
             r.currency,
+            r.total_amount,
+            r.amount_uzs,
+            r.execution_status,
             r.product_name,
             r.data_source,
             r.trade_date,

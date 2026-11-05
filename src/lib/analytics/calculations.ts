@@ -1,7 +1,7 @@
-import Decimal from "decimal.js";
 import type { Trade } from "@/types";
-const Financial = Decimal.clone({ precision: 64 });
-export function summarize(rows: Trade[]) {
+import type Decimal from "decimal.js";
+import { Financial, hasValue, isCancelled, tradeValue } from "./accounting";
+export function summarize(rows: Iterable<Trade>) {
   const values: Record<string, Decimal> = Object.create(null),
     quantities: Record<string, Decimal> = Object.create(null),
     products: Record<string, number> = Object.create(null),
@@ -14,11 +14,20 @@ export function summarize(rows: Trade[]) {
         quantities: Record<string, string>;
       }
     > = Object.create(null);
-  let excluded = 0;
+  let excluded = 0,
+    count = 0,
+    latest: string | null = null,
+    cancelled = 0;
+  let convertedValueUZS: InstanceType<typeof Financial> | null = null;
   for (const t of rows) {
-    quantities[t.unit] = (quantities[t.unit] ?? new Financial(0)).plus(
-      t.quantity,
-    );
+    count++;
+    if (!latest || t.trade_date > latest) latest = t.trade_date;
+    const cancelledTrade = isCancelled(t);
+    if (cancelledTrade) cancelled++;
+    if (!cancelledTrade)
+      quantities[t.unit] = (quantities[t.unit] ?? new Financial(0)).plus(
+        t.quantity,
+      );
     products[t.product_name] = (products[t.product_name] ?? 0) + 1;
     const d = (daily[t.trade_date] ??= {
       date: t.trade_date,
@@ -27,19 +36,27 @@ export function summarize(rows: Trade[]) {
       quantities: Object.create(null),
     });
     d.count++;
-    d.quantities[t.unit] = new Financial(d.quantities[t.unit] ?? 0)
-      .plus(t.quantity)
-      .toFixed();
-    if (t.currency && t.price_unit === t.unit) {
-      const value = new Financial(t.price).times(t.quantity);
-      values[t.currency] = (values[t.currency] ?? new Financial(0)).plus(value);
-      d.values[t.currency] = new Financial(d.values[t.currency] ?? 0)
+    if (!cancelledTrade)
+      d.quantities[t.unit] = new Financial(d.quantities[t.unit] ?? 0)
+        .plus(t.quantity)
+        .toFixed();
+    if (hasValue(t)) {
+      const value = tradeValue(t),
+        currency = t.currency!;
+      values[currency] = (values[currency] ?? new Financial(0)).plus(value);
+      d.values[currency] = new Financial(d.values[currency] ?? 0)
         .plus(value)
         .toFixed();
+      if (t.amount_uzs !== undefined)
+        convertedValueUZS = (convertedValueUZS ?? new Financial(0)).plus(
+          t.amount_uzs,
+        );
     } else excluded++;
   }
   return {
-    count: rows.length,
+    count,
+    cancelled,
+    convertedValueUZS: convertedValueUZS?.toFixed() ?? null,
     values: Object.fromEntries(
       Object.entries(values).map(([k, v]) => [k, v.toFixed()]),
     ),
@@ -50,10 +67,7 @@ export function summarize(rows: Trade[]) {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count),
     daily: Object.values(daily).sort((a, b) => a.date.localeCompare(b.date)),
-    latest: rows.reduce<string | null>(
-      (d, t) => (!d || t.trade_date > d ? t.trade_date : d),
-      null,
-    ),
+    latest,
     excluded,
   };
 }

@@ -2,6 +2,30 @@ import type { UiLanguage } from "./preferences";
 // Only canonical application-authored sentences are localized. Captured source values
 // are inserted as text; original records, IDs, prices and dates are never rewritten.
 const patterns: { match: RegExp; uz: string; ru: string }[] = [
+  {
+    match:
+      /^Default analysis period: ([\d-]+) → ([\d-]+)\. Choose dates to analyze another period\.$/,
+    uz: "Standart tahlil davri: {1} → {2}. Boshqa davr uchun sanalarni tanlang.",
+    ru: "Период анализа по умолчанию: {1} → {2}. Для другого периода выберите даты.",
+  },
+  {
+    match:
+      /^Missing source years: ([\d, ]+)\. Missing observations are not zero activity\.$/,
+    uz: "Manba yillari yo‘q: {1}. Ma’lumot yo‘qligi nol faollik emas.",
+    ru: "Нет исходных данных за годы: {1}. Пропуск данных не означает нулевую активность.",
+  },
+  {
+    match:
+      /^(\d+) cancelled records are counted in registry activity and excluded from value and quantity\.$/,
+    uz: "{1} ta bekor qilingan yozuv reyestr sonida saqlangan, qiymat va hajmdan chiqarilgan.",
+    ru: "{1} аннулированных записей учтены в реестре и исключены из стоимости и объёма.",
+  },
+  {
+    match:
+      /^Sum of exact source amounts \(otherwise price × quantity\) in (.*); matching units, cancelled records excluded\.$/,
+    uz: "Manbadagi aniq summalar (aks holda narx × miqdor) yig‘indisi {1}; birliklar mos, bekor qilinganlar chiqarilgan.",
+    ru: "Сумма точных исходных сумм (иначе цена × объём) в {1}; единицы совпадают, аннулированные записи исключены.",
+  },
   { match: /^Currency: (.*)$/, uz: "Valyuta: {1}", ru: "Валюта: {1}" },
   {
     match: /^Price basis: (.*)$/,

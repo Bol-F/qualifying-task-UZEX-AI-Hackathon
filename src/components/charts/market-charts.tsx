@@ -48,6 +48,8 @@ export function ActivityChart({
 }) {
   const { t: tr } = usePreferences();
   const points = dashboardPoints(data, metric, group);
+  const multipleYears =
+    data.daily[0]?.date.slice(0, 4) !== data.latest?.slice(0, 4);
   return (
     <ResponsiveContainer width="100%" height={210}>
       <AreaChart
@@ -67,7 +69,9 @@ export function ActivityChart({
         />
         <XAxis
           dataKey="date"
-          tickFormatter={(v) => String(v).slice(5)}
+          tickFormatter={(v) =>
+            multipleYears ? String(v).slice(0, 7) : String(v).slice(5)
+          }
           tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
@@ -112,6 +116,16 @@ export function ActivityChart({
 }
 export function CommodityChart({ data }: { data: Analytics }) {
   const { t: tr } = usePreferences();
+  const shown =
+    data.products.length <= 8
+      ? data.products
+      : [
+          ...data.products.slice(0, 7),
+          {
+            name: tr("Other commodities"),
+            count: data.products.slice(7).reduce((sum, p) => sum + p.count, 0),
+          },
+        ];
   return (
     <>
       <div className="donut-wrap">
@@ -119,7 +133,7 @@ export function CommodityChart({ data }: { data: Analytics }) {
           <PieChart>
             <Pie
               isAnimationActive={false}
-              data={data.products}
+              data={shown}
               dataKey="count"
               nameKey="name"
               innerRadius={62}
@@ -127,7 +141,7 @@ export function CommodityChart({ data }: { data: Analytics }) {
               paddingAngle={3}
               stroke="none"
             >
-              {data.products.map((p, i) => (
+              {shown.map((p, i) => (
                 <Cell key={p.name} fill={colors[i % colors.length]} />
               ))}
             </Pie>
@@ -140,7 +154,7 @@ export function CommodityChart({ data }: { data: Analytics }) {
         </div>
       </div>
       <div className="chart-legend">
-        {data.products.map((p, i) => (
+        {shown.map((p, i) => (
           <div key={p.name}>
             <span style={{ background: colors[i % colors.length] }} />
             <label>{p.name}</label>
@@ -159,7 +173,7 @@ export function DailyBars({ data }: { data: Analytics }) {
     <ResponsiveContainer width="100%" height={160}>
       <BarChart
         data={data.daily.map((d) => ({
-          date: d.date.slice(5),
+          date: d.date,
           count: d.count,
         }))}
       >

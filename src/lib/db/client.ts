@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { databaseFetch } from "./transport";
 import { parseDataMode } from "./mode";
-export function dataMode(): "demo" | "live" {
+export function dataMode() {
   return parseDataMode(process.env.DATA_MODE);
 }
 export function database() {

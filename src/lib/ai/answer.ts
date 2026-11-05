@@ -29,7 +29,7 @@ const glossary = {
 export async function answer(plan: QueryPlan, lang: Language) {
   const mode = dataMode();
   const prefix =
-    mode === "demo"
+    mode === "demo" || mode === "local"
       ? lang === "ru"
         ? "**ДЕМО: синтетические данные, не реальные сделки UZEX.**"
         : "**DEMO: sun’iy ma’lumotlar, haqiqiy UZEX bitimlari emas.**"

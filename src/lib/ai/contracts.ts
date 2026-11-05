@@ -55,12 +55,14 @@ export const coverageSchema = z.object({
   to: dateSchema.nullable(),
   total: z.number().int().nonnegative(),
   latestImport: z.string().nullable(),
+  missingYears: z.array(z.number().int()).optional(),
+  missingBrokers: z.boolean().optional(),
 });
 export type Coverage = z.infer<typeof coverageSchema>;
 export const evidenceSchema = z.object({
   id: z.string(),
   tool: z.string(),
-  mode: z.enum(["demo", "live"]),
+  mode: z.enum(["demo", "live", "local"]),
   title: z.string(),
   filters: scopeSchema,
   selection: z

@@ -1,4 +1,29 @@
-# Release audit — November 5, 2026
+# README2 registry integration — November 5, 2026
+
+The application now supports the supplied CSV registry in local SQLite mode, with no external database or paid inference calls. All **393,353 available trades** imported successfully. File roles were identified by headers, preserving the originals and recording source hashes. The README text stored as `deals_2022.csv` was skipped. The input lacks **106,647 trades for 2024** and the **broker directory**; the UI and assistant explicitly disclose these gaps.
+
+Independent Python `csv`/`decimal` calculations over the original files matched the SQLite snapshot exactly, including all unit-grouped quantities. SQLite `PRAGMA quick_check` returned `ok`.
+
+| Check                                       | Verified result                                                                                                                                                                                                                 |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Source trade count                          | 393,353 (2022: 84,299; 2023: 93,985; 2025: 115,763; 2026: 99,306)                                                                                                                                                               |
+| Cancelled records                           | 26,396, retained in registry counts and excluded from value/volume                                                                                                                                                              |
+| Non-cancelled source amounts                | 152,777,205,033,904.85 UZS; 853,516,434.43 USD                                                                                                                                                                                  |
+| Combined value at each trade date's FX rate | 163,014,603,800,210.5204 UZS                                                                                                                                                                                                    |
+| References                                  | 6,616 contracts; 14,392 participants; 1,765 daily USD rates                                                                                                                                                                     |
+| Unit tests                                  | 62 passed, including import rollback/dry-run, mismatched filenames, exact recurring-price accounting, cancellation, indexed filtering, decimal sort and indexed available dates                                                 |
+| Existing demo browser regression suite      | 19 passed; registry tests run separately against local mode                                                                                                                                                                     |
+| README2 browser suite                       | 4 passed: full dashboard/provenance and missing-year state, all five mobile workspaces and Russian labels, joined trade details and matching CSV export, analytics/report/bilingual assistant flow                              |
+| Production build, lint, TypeScript          | Passed under Node.js 24.22.2 / Next.js 16.4.5                                                                                                                                                                                   |
+| Browser method                              | Browser plugin not available; configured Playwright with installed Chrome, localhost production server; desktop 1536×1024 and mobile 390×844                                                                                    |
+| Rendered evidence                           | Correct page title, meaningful content, no framework overlay, no runtime/console errors in the five mobile workspaces, no horizontal document overflow; screenshots stored outside the repository in the OS temporary directory |
+| Client asset secret scan                    | 33 assets scanned, no matches; no provider credentials configured for this run                                                                                                                                                  |
+
+The local registry's dashboard covers the complete imported snapshot. Detailed analytics, reports and undated assistant requests disclose a latest-month default, with 50,000 matched-row bounds. Explicit last-N-trading-day requests use indexed observed dates. The 100,000-row export bound remains explicit. Large-range trend charts are bounded; oversized requests require narrower selections. Gemini-backed planning/generation remains unverified for this integration; the tested assistant and reports use local deterministic tools. No deployment, cloud connection, Git commit or remote push was performed.
+
+The preceding fixture-based audit is retained below as historical evidence; its 184-record totals describe `DATA_MODE=demo`.
+
+# Earlier fixture release audit — November 5, 2026
 
 Scope: existing UZEX Insight AI application. Baseline preserved in Git commit `70e3834`. No user transaction data was removed, no production database was modified, and no paid resource was created.
 

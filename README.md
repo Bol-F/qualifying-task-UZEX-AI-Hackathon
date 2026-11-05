@@ -2,6 +2,8 @@
 
 A Next.js financial analytics application with an evidence-grounded Uzbek / Russian assistant. The application starts without credentials in **DEMO DATA MODE**. Its 184 deterministic, synthetic records are stored in `src/lib/db/demo.ts`; none represent official UZEX transactions. No official live feed is claimed.
 
+The supplied **README2 CSV registry** is now supported locally through indexed SQLite (`DATA_MODE=local`), without a cloud database or API key. It currently contains **393,353 synthetic trades**, 6,616 contracts, 14,392 participants and 1,765 daily USD rates. The files supplied in this workspace do **not** include the 106,647 trades for 2024 or the broker directory advertised by README2. The application explicitly displays these gaps.
+
 Explore stored transactions, compare commodities and trading periods, ask bilingual questions with inspectable evidence, investigate transparent statistical patterns, and print an analytics briefing. The first-visit guide supplies questions adapted to actual available records.
 
 The interface opens in a white, emerald and blue **light theme**. Use the top navbar to switch **light / dark mode** and **English / O‘zbekcha / Русский** across all five workspaces. Both preferences survive navigation and reload. Original transaction names, identifiers, quantities and prices stay unchanged. The assistant answers data questions in Uzbek or Russian, following the latest question's language.
@@ -21,6 +23,39 @@ npm run dev
 ```
 
 Open http://localhost:3000. Routes: `/dashboard`, `/assistant`, `/trades`, `/analytics`, `/reports`. `npm run build` and `npm start` run the production build. Checks: `npm run lint`, `npm run typecheck`, `npm test`, and `npm run test:e2e`. Playwright builds and launches an isolated **production** server on port 3100 with demo data and local tools; it does not call paid APIs. Stop other Next.js development servers before E2E tests or a build: Next.js shares generated type files even when output directories differ. See [deployment instructions](docs/phase-3.md) and the [current release report](TEST_REPORT.md).
+
+## README2 registry on localhost
+
+Run `npm run import:registry -- .` to import the CSV files in the project directory. An optional alternative directory may be supplied. Use `--dry-run` to validate without replacing the existing database. Set `DATA_MODE=local`, `AI_MODE=local` and `LOCAL_DATA_PATH=data/registry.sqlite` in `.env.local`, then start the application. The current workspace is already configured this way. Use Node.js 24 as required by `package.json`; Node 22 installed elsewhere on the machine does not change this requirement.
+
+The importer detects each file's role from its **column headers**, because the provided filenames are mismatched. It preserves the originals and records their SHA-256 hashes and row counts. The dataset notice on every data workspace expands to show this provenance; `/api/dataset` returns the same information.
+
+| Supplied filename  | Actual contents                             |
+| ------------------ | ------------------------------------------- |
+| `participants.csv` | 84,299 trades from 2022                     |
+| `deals_2026.csv`   | 93,985 trades from 2023                     |
+| `deals_2023.csv`   | 115,763 trades from 2025                    |
+| `usd_rates.csv`    | 99,306 trades from 2026                     |
+| `brokers.csv`      | 6,616 contract cards                        |
+| `deals_2025.csv`   | 14,392 participants                         |
+| `deals_2024.csv`   | 1,765 USD exchange rates                    |
+| `deals_2022.csv`   | README text, skipped as a non-registry file |
+
+Quantity equals **number of lots × lot size**. Contract currency comes from the joined contract card. Exact source transaction amounts drive all totals, including reports and AI tools; the displayed unit price is rounded to six decimal places and is not multiplied back to reconstruct source totals. USD amounts are converted using the rate on the transaction date. Original currencies and measurement units remain separate; the dashboard additionally labels the combined value converted to UZS. Cancelled transactions remain searchable and count as registry records, but are excluded from trade value and traded quantity. Pending and partial transactions are not represented as settled cash flows.
+
+The importer validates references, dates, units, lot sizes, currency, rates and unique deal numbers before replacing the database. It builds a separate staging database and only replaces the preceding database on success. Failed imports and dry runs leave it intact. Close/restart the application when replacing its database. The generated SQLite file (about 900 MiB for this enriched dataset) is ignored by Git and excluded from deployment tracing. A fresh checkout must import its CSV files again.
+
+The dashboard summarizes all available local records. Detailed analytics, reports and assistant requests without a period select the **latest available 30 calendar days**, show the actual dates and disclose this default. Select a product and dates for larger comparisons. Local detailed reads are capped at 50,000 matching rows; exports at 100,000. Oversized requests return a narrowing instruction, never a truncated aggregate. The commodity selector has a search field to handle hundreds of product descriptions. Missing-year chart gaps are left disconnected.
+
+To repeat the local registry browser checks against an already running localhost server:
+
+```powershell
+$env:PLAYWRIGHT_BASE_URL='http://localhost:3000'
+$env:UZEX_REGISTRY_E2E='1'
+npx playwright test registry.e2e.ts
+```
+
+The regular browser suite still verifies the small deterministic demo independently. Local assistant mode uses deterministic query tools and does not call Gemini. Configure Gemini separately if provider-backed natural-language planning is required.
 
 ## Live imported records
 
@@ -45,7 +80,7 @@ Conversation state is scoped to an HttpOnly browser-session cookie and conversat
 
 - `src/app`: pages and Node.js API endpoints. `/api/health` exposes configuration booleans only.
 - `src/lib/db`: server-only Supabase access, indexed filters, stable pagination, deterministic demo fixture.
-- `src/lib/analytics`: decimal arithmetic; values grouped by currency, quantities grouped by unit. Value is included only when currency is known and `price_unit === unit`. Exclusions are counted. No FX conversion or cross-unit addition. Forward and pending records remain in activity totals; these are transaction records, not settled cash flows.
+- `src/lib/analytics`: decimal arithmetic; exact source amounts when available, otherwise price × quantity. Values stay grouped by currency and quantities by unit; cancelled records are excluded from both. Value requires known currency and `price_unit === unit`. The README2 dashboard additionally labels UZS conversion using trade-date source rates. No cross-unit addition. Forward and pending records remain in activity totals; these are transaction records, not settled cash flows.
 - `src/lib/ai`: centralized Gemini client, bounded agent loop, validated tool registry, deterministic executor, conversation memory, evidence contracts, approved knowledge collection, safe errors and retry policy.
 - `src/components`: shared shell, data states, charts, accessible shadcn primitives, transaction drawer.
 - CSV export uses the same filters as the table and escapes formula prefixes and quotes.
@@ -56,7 +91,7 @@ Agent tools are capped more tightly: 5,000 matched records per read, six calls o
 
 ## Verification and local release
 
-Current owner instruction: run on **localhost**, retain local demo data, and use **GitHub only** for source synchronization. No Vercel deployment or Supabase connection is active. No credentials are bundled. Phase 3 recorded live Gemini tool calling/report checks; the current audit verified model access and used unpaid mocks/local tools for repeatable tests. See the [current test report](TEST_REPORT.md) and [three-minute demo](DEMO_GUIDE.md).
+Run on **localhost**. The current README2 integration uses the supplied synthetic CSV registry; the original small demo remains available through `DATA_MODE=demo`. No Vercel deployment or Supabase connection is active. No credentials are bundled. Earlier phases recorded Gemini checks; local-mode tests use unpaid tools. See the [test report](TEST_REPORT.md) and [three-minute demo](DEMO_GUIDE.md) for historical verification.
 
 The design reference is `docs/design-concept.png`. The implementation preserves its dark shell, mint activity chart, compact metrics, commodity donut, and transaction/insight layout. Reference numbers and dates are deliberately replaced by fixture-derived values. Additional charts and responsive layouts implement the requested functionality.
 
@@ -64,7 +99,8 @@ The design reference is `docs/design-concept.png`. The implementation preserves 
 
 | Variable                                    | Purpose                                                                              |
 | ------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `DATA_MODE`                                 | `demo` or `live`; invalid values fail closed                                         |
+| `DATA_MODE`                                 | `demo`, `local` (README2 SQLite registry), or `live`; invalid values fail closed     |
+| `LOCAL_DATA_PATH`                           | Server-only SQLite path; defaults to `data/registry.sqlite`                          |
 | `AI_MODE`                                   | `auto` uses configured Gemini; `local` runs explicitly labeled unpaid tools          |
 | `GEMINI_API_KEY`                            | Server-only inference credential                                                     |
 | `GEMINI_MODEL`                              | Account-supported model, checked at runtime                                          |
@@ -74,7 +110,7 @@ The design reference is `docs/design-concept.png`. The implementation preserves 
 
 Never use `NEXT_PUBLIC_` for these secrets. `.env.local` and `.vercel` are ignored. `npm run check:secrets` scans production static assets for configured secret literals; `npm run check:gemini` checks account/model metadata without generating tokens.
 
-Keep `DATA_MODE=demo` for the current local release. Supabase and hosting configuration are retained as optional architecture from prior phases and are not connected. The GitHub remote is:
+Use `DATA_MODE=local` for the supplied README2 registry or `DATA_MODE=demo` for the original fixture. Supabase and hosting configuration are retained as optional architecture from prior phases and are not connected. The GitHub remote is:
 
 ```powershell
 git remote -v

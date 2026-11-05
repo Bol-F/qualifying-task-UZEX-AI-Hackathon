@@ -2,11 +2,11 @@
 
 This is the existing Next.js App Router application, hardened for the November 2026 demonstration. It is a shared analytics workspace, not a brokerage, order-entry system, official UZEX feed, or full exchange register.
 
-Current operating scope: **localhost + GitHub source synchronization only**, as requested by the owner on November 5. The synthetic fixture is active. Existing Supabase/Vercel adapters are dormant; no external database/hosting connection is established.
+Current operating scope: **localhost**. The supplied README2 registry is active through `DATA_MODE=local`: 393,353 synthetic records in a local SQLite database. `DATA_MODE=demo` retains the 184-row fixture. Existing Supabase/Vercel adapters are dormant; no external database/hosting connection is established.
 
 ## Request and data flow
 
-`Browser → read-only Next.js routes → validated query builders → synthetic fixture or Supabase trades`
+`Browser → read-only Next.js routes → validated query builders → local SQLite registry, synthetic fixture, or optional Supabase trades`
 
 `Assistant → bounded agent → official @google/genai function calls → seven allowlisted tools → deterministic calculations → validated evidence/chart contract → browser`
 
@@ -35,6 +35,12 @@ Browser chat history remains bounded and validated. `uzex-active-chat-v2` rememb
 
 ## Storage and provenance
 
+The README2 adapter in `src/lib/registry` reads an indexed, read-only SQLite database through Node.js 24's built-in `node:sqlite`. Its importer streams CSV files, identifies schemas from column headers, joins contract/participant/rate references, validates rows and writes a temporary database. A successful import atomically replaces the destination. Failed imports and dry runs preserve the previous database; restarting the application switches existing read connections to the newly imported snapshot.
+
+SQLite stores enriched source records as JSON plus indexed dates, IDs, products, contract fields and fixed-width decimal sort keys. Exact decimal strings never pass through binary floating-point sorting. The source manifest records file hashes, actual row counts, coverage and missing years/directories. The supplied files contain no 2024 trades or broker-name directory; neither is fabricated. `/api/dataset` and expandable source notices expose this incompleteness. Raw CSV files are preserved.
+
+The complete dashboard summary is calculated during import using a streaming Decimal accumulator and persisted with the snapshot. Filtered summaries use the same accumulator with a bounded process-local cache. This supports all 393,353 records without returning them to the browser. SQLite data files are ignored by Git and excluded from deployment tracing; local mode requires provisioning the file on the host.
+
 The `trades` table stores text source identifiers, contract number, date, product and normalized name, PostgreSQL `numeric(24,6)` price/quantity, quoted price basis, unit, optional currency, contract type/status, source label and import time. Contract numbers are deliberately not unique. Numeric columns are selected as text to preserve financial precision.
 
 Indexes support date/ID pagination, commodity and identifier search, currency/price, product/date, contract type/date and import freshness. RLS is enabled; `anon` and `authenticated` have no table grants. A server-only service-role credential supports controlled reads and CLI imports. No database resources were provisioned or migrated by this audit.
@@ -44,8 +50,9 @@ Imports validate all rows before writes, normalize bilingual aliases, hash sourc
 ## Accounting invariants
 
 - Count means stored transaction records, not the total activity of the exchange.
-- Transaction value is `price × quantity` only when currency is known and `price_unit === unit`.
-- Values stay separate by currency. Quantities stay separate by unit. No FX or unit conversion is inferred.
+- Transaction value uses the exact source amount when supplied, otherwise `price × quantity`, only when currency is known and `price_unit === unit`.
+- README2 quantity is `lot count × lot size`. Displayed derived unit prices are rounded; financial totals use the exact original amount. Cancelled records count as registry activity but do not contribute to value or volume.
+- Values stay separate by currency and quantities by unit. README2 additionally supplies an explicitly labeled UZS total using each trade date's source USD rate. No FX or cross-unit conversion is inferred for other imports.
 - Price filters require currency and quoted price basis. Decimal strings retain precision through filtering and sorting.
 - Missing observations remain unavailable; a real zero value remains zero. Percentage changes require an observed, nonzero baseline.
 - Latest import time is the maximum stored import timestamp. Refresh time is separately labeled.
@@ -67,7 +74,7 @@ An HttpOnly, same-site browser cookie scopes a conversation UUID. Bounded proces
 
 ## Performance and operational limits
 
-Database reads run in stable 1,000-row pages. Dashboard/export reads cap at 100,000 records; agent/workspace reads cap at 5,000. Oversized selections fail explicitly. Source samples, six tool calls, ninety assistant chart points and 366 workspace dates bound UI and inference payloads. These limits are not substitutes for indexed SQL aggregates on large datasets.
+Supabase reads run in stable 1,000-row pages. SQLite table pages use indexed queries; its dashboard summary covers the full dataset, exports cap at 100,000 matching rows, and detailed agent/workspace reads cap at 50,000. Other modes retain their 100,000 dashboard/export and 5,000 tool/workspace limits. Oversized selections fail explicitly. Local detailed analysis without dates selects and discloses the latest available month. Indexed distinct-date queries discover previous available days and the last requested trading days without reading the entire registry. Source samples, six tool calls, ninety assistant chart points and 366 workspace dates bound UI and inference payloads.
 
 Analytics reuse a coverage promise per request and a selected measure within the workspace. Independent reads run concurrently; freshness-sensitive routes and database fetches use `no-store`. Database cancellation combines the caller's signal with a fifteen-second source timeout.
 

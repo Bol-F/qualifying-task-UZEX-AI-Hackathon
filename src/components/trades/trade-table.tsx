@@ -77,7 +77,7 @@ export function TradeTable({
                   </td>
                   <td>
                     <span
-                      className={`status-badge ${t.execution_status === "Completed" ? "complete" : "pending"}`}
+                      className={`status-badge ${["Completed", "Исполнен"].includes(t.execution_status) ? "complete" : "pending"}`}
                     >
                       <i />
                       {t.execution_status}
@@ -117,7 +117,7 @@ export function TradeTable({
             <div className="detail-body">
               <h2>{selected.product_name}</h2>
               <span
-                className={`status-badge ${selected.execution_status === "Completed" ? "complete" : "pending"}`}
+                className={`status-badge ${["Completed", "Исполнен"].includes(selected.execution_status) ? "complete" : "pending"}`}
               >
                 {selected.execution_status}
               </span>
@@ -129,6 +129,13 @@ export function TradeTable({
                   </div>
                 ))}
               </dl>
+              {selected.total_amount !== undefined && (
+                <p className="muted">
+                  {tr(
+                    "Registry quantity equals lots × lot size. The exact source amount is used for totals; the displayed unit price is rounded. Cancelled records are excluded from value and volume.",
+                  )}
+                </p>
+              )}
               <p className="muted">
                 {tr(
                   " Price \u00D7 quantity is valid only when the price basis matches the quantity unit. Contract numbers may repeat. ",

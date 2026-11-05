@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "import:trades": "tsx --env-file=.env.local scripts/import-trades.ts",
+    "import:registry": "tsx --env-file-if-exists=.env.local scripts/import-registry.ts",
     "test:e2e": "playwright test",
     "check:gemini": "node --env-file-if-exists=.env.local scripts/check-gemini.mjs",
     "check:secrets": "node --env-file-if-exists=.env.local scripts/check-client-secrets.mjs",

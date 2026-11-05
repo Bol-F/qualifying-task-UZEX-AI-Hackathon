@@ -10,8 +10,10 @@ import {
 } from "@/lib/validations/trades";
 import { filterDemo } from "./filters";
 import { buildTradeQuery } from "./query-builder";
+import { localRegistry } from "@/lib/registry/database";
 export { filterDemo } from "./filters";
 export async function datasetCoverage(signal?: AbortSignal) {
+  if (dataMode() === "local") return localRegistry().coverage();
   if (dataMode() === "demo") {
     return {
       from: demoTrades.reduce<string | null>(
@@ -67,6 +69,7 @@ function query(f: Filters) {
 export async function listTrades(input: Partial<Filters> = {}) {
   const f = filtersSchema.parse(input),
     mode = dataMode();
+  if (mode === "local") return localRegistry().list(f);
   if (mode === "demo") {
     const all = filterDemo(demoTrades, f);
     return {
@@ -92,6 +95,10 @@ export async function allTrades(
 ) {
   const f = filtersSchema.parse(input);
   const limit = options.limit ?? 100000;
+  if (dataMode() === "local") {
+    options.signal?.throwIfAborted();
+    return localRegistry().list(f, limit).rows;
+  }
   if (dataMode() === "demo") {
     const rows = filterDemo(demoTrades, f);
     if (rows.length > limit) throw new AgentError("DATA_LIMIT", 422);

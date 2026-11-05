@@ -20,6 +20,7 @@ import { copy, type Language } from "@/lib/i18n";
 import { useAgentChat } from "@/hooks/use-agent-chat";
 import { useResource } from "@/hooks/use-resource";
 import { EvidenceResponse } from "@/components/assistant/evidence-response";
+import { DataNotice } from "@/components/layout/data-notice";
 export default function Assistant() {
   const { t: tr, language: uiLanguage } = usePreferences();
   const language: Language = uiLanguage === "ru" ? "ru" : "uz";
@@ -40,6 +41,7 @@ export default function Assistant() {
   const readiness = useResource<{
     aiConfigured: boolean;
     aiMode?: string;
+    dataMode?: string;
   }>("/api/health");
   const bottom = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -71,6 +73,7 @@ export default function Assistant() {
           <p>{tr("Your market questions. Answers backed by evidence.")}</p>
         </div>
       </div>
+      {readiness.data?.dataMode === "local" && <DataNotice mode="local" />}
       <div className="assistant-layout">
         <aside className="chat-history">
           <Button

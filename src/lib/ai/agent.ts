@@ -233,7 +233,7 @@ export async function runAgent(
   const selected =
     evidence.find((e) => e.id === presentation?.focus) ?? evidence.at(-1)!;
   const prefix =
-    store.mode === "demo"
+    store.mode === "demo" || store.mode === "local"
       ? language === "ru"
         ? "**ДЕМО: синтетические данные, не реальные сделки UZEX.**"
         : "**DEMO: sun’iy ma’lumotlar, haqiqiy UZEX bitimlari emas.**"

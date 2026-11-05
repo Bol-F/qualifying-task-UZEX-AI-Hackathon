@@ -43,6 +43,7 @@ export default function Dashboard() {
     [from, setFrom] = useState(""),
     [to, setTo] = useState(""),
     [catalog, setCatalog] = useState<Data | null>(null),
+    [quantityUnit, setQuantityUnit] = useState(""),
     [metric, setMetric] = useState<"count" | "value" | "volume">("value"),
     [group, setGroup] = useState("");
   const latestDates = catalog?.daily.slice(-7) ?? [];
@@ -68,6 +69,10 @@ export default function Dashboard() {
     ? Object.keys(metric === "volume" ? data.quantities : data.values)
     : [];
   const selected = groups.includes(group) ? group : (groups[0] ?? "");
+  const quantityUnits = Object.keys(data?.quantities ?? {});
+  const selectedQuantityUnit = quantityUnits.includes(quantityUnit)
+    ? quantityUnit
+    : (quantityUnits[0] ?? "");
   return (
     <>
       <div className="page-heading">
@@ -177,6 +182,26 @@ export default function Dashboard() {
                 ". Latest available dates describe this dataset, not a live market feed. ",
               )}
             </p>
+            {data.mode === "local" && (
+              <p className="registry-accounting">
+                {tr(
+                  "Cancelled records: {count}. Excluded from value and volume; retained in registry counts.",
+                  { count: data.cancelled },
+                )}
+                {data.convertedValueUZS !== null && (
+                  <>
+                    {" "}
+                    {tr(
+                      "Value in UZS at each trade date's exchange rate:",
+                    )}{" "}
+                    <strong title={data.convertedValueUZS}>
+                      {number(data.convertedValueUZS, true)} UZS
+                    </strong>
+                    .
+                  </>
+                )}
+              </p>
+            )}
             <GuidedDemo demo={data.demo} mode={data.mode} />
             <div className="kpi-grid">
               {[
@@ -193,17 +218,24 @@ export default function Dashboard() {
                     Object.entries(data.values)
                       .map(([c, v]) => `${number(v, true)} ${c}`)
                       .join(" · ") || "Unavailable",
-                  sub: tr("{count} records excluded · unmatched basis", {
-                    count: data.excluded,
-                  }),
+                  sub: tr(
+                    data.mode === "local"
+                      ? "{count} records excluded · cancelled or unmatched basis"
+                      : "{count} records excluded · unmatched basis",
+                    {
+                      count: data.excluded,
+                    },
+                  ),
                 },
                 {
                   title: "Traded quantity",
                   icon: Boxes,
                   value:
-                    Object.entries(data.quantities)
-                      .map(([u, v]) => `${number(v, true)} ${u}`)
-                      .join(" · ") || "—",
+                    quantityUnits.length > 2
+                      ? `${number(data.quantities[selectedQuantityUnit], true)} ${selectedQuantityUnit}`
+                      : Object.entries(data.quantities)
+                          .map(([u, v]) => `${number(v, true)} ${u}`)
+                          .join(" · ") || "—",
                   sub: "Grouped by measurement unit",
                 },
                 {
@@ -219,6 +251,18 @@ export default function Dashboard() {
                     <k.icon size={16} />
                   </div>
                   <strong className="kpi-value">{k.value}</strong>
+                  {k.title === "Traded quantity" &&
+                    quantityUnits.length > 2 && (
+                      <select
+                        aria-label={tr("Quantity summary unit")}
+                        value={selectedQuantityUnit}
+                        onChange={(e) => setQuantityUnit(e.target.value)}
+                      >
+                        {quantityUnits.map((unit) => (
+                          <option key={unit}>{unit}</option>
+                        ))}
+                      </select>
+                    )}
                   <small>{tr(k.sub)}</small>
                   <div className="kpi-bottom">
                     <span className="tiny-dot" />

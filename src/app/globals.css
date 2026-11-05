@@ -1935,3 +1935,37 @@ footer > span:last-child {
     text-overflow: ellipsis;
   }
 }
+/* Source provenance remains compact until the user expands it. */
+.registry-notice {
+  margin: -4px 0 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.registry-notice summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.registry-notice p {
+  margin-top: 9px;
+  line-height: 1.6;
+}
+.registry-notice ul {
+  padding-left: 18px;
+  margin-top: 8px;
+  line-height: 1.8;
+}
+.registry-accounting {
+  margin: 0 0 18px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+.commodity-search {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}

@@ -8,3 +8,5 @@ test-results/
 .qa/
 .vercel/
 supabase/.temp/
+data/*.sqlite*
+data/*.tmp
