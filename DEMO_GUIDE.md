@@ -18,6 +18,8 @@ npm start
 
 Open http://localhost:3000/dashboard. `/api/health` should report `status: ok`. `npm run check:gemini` checks configured model access without generating tokens; it is not proof of successful generation. A fresh live generation check can consume billable tokens and needs an approved account/budget.
 
+The navbar contains the global English / O‘zbekcha / Русский selector and light/dark toggle. Light mode is the default; preferences persist through reload. Choose the preferred interface language before presenting. Demo question and source record text retain their original language. On mobile, use the labeled bottom navigation. Reports keep optional comparison/contract controls in an expandable section; an applied-filter badge indicates inherited constraints.
+
 Set `AI_MODE=auto` for the configured Gemini agent. `AI_MODE=local` provides a repeatable unpaid walkthrough with an explicit local-engine label. Never describe the latter as a live Gemini demonstration. Do not copy over an existing `.env.local`; it may already contain private credentials.
 
 The supplied fixture has **184 synthetic records, October 1–30, 2026**. Its latest carbamide date is **October 28**; the previous available carbamide date is **October 24**. No November records are supplied. Keep the visible **DEMO DATA MODE** notice in screenshots and presentations. For imported data, use the guide's generated dates/products and confirm counts first.

@@ -38,7 +38,7 @@ test("dashboard, filters, details, export and grounded assistant", async ({
   await expect(page.getByText("No matching transactions")).toBeVisible();
   await page.screenshot({ path: ".qa/trades-empty.png", fullPage: true });
   await page.goto("/assistant");
-  await page.getByRole("button", { name: "Русский" }).click();
+  await page.getByTestId("language-select").selectOption("ru");
   await page
     .getByRole("button", { name: /Покажи сделки по карбамиду/ })
     .click();

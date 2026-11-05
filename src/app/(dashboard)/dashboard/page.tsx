@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -36,6 +37,7 @@ type Data = Analytics & {
   demo: ReturnType<typeof demoQuestions>;
 };
 export default function Dashboard() {
+  const { t: tr, formatDate } = usePreferences();
   const [range, setRange] = useState("all"),
     [commodity, setCommodity] = useState(""),
     [from, setFrom] = useState(""),
@@ -56,9 +58,9 @@ export default function Dashboard() {
   const { data, error, loading, retry } = useResource<Data>(
     "/api/analytics" + query,
   );
-  const recent = useResource<{ rows: Trade[] }>(
-    "/api/trades" + (query ? query + "&" : "?") + "pageSize=5",
-  );
+  const recent = useResource<{
+    rows: Trade[];
+  }>("/api/trades" + (query ? query + "&" : "?") + "pageSize=5");
   useEffect(() => {
     if (data && !query) setCatalog(data);
   }, [data, query]);
@@ -71,32 +73,36 @@ export default function Dashboard() {
       <div className="page-heading">
         <div>
           <h1>
-            Market overview
+            {tr(" Market overview ")}
             <span className="heading-dot" />
           </h1>
-          <p>Clarity in every transaction. Intelligence for every decision.</p>
+          <p>
+            {tr(
+              "Review activity, filter by date or product, and inspect the source records.",
+            )}
+          </p>
         </div>
         <div className="heading-actions">
           <label className="date-select">
             <CalendarDays size={15} />
             <select
-              aria-label="Dashboard date range"
+              aria-label={tr("Dashboard date range")}
               value={range}
               onChange={(e) => setRange(e.target.value)}
             >
-              <option value="all">All available records</option>
+              <option value="all">{tr("All available records")}</option>
               <option value="latest" disabled={!catalog?.daily.length}>
-                Latest 7 available trading days
+                {tr(" Latest 7 available trading days ")}
               </option>
-              <option value="custom">Custom date range</option>
+              <option value="custom">{tr("Custom date range")}</option>
             </select>
           </label>
           <select
-            aria-label="Dashboard commodity"
+            aria-label={tr("Dashboard commodity")}
             value={commodity}
             onChange={(e) => setCommodity(e.target.value)}
           >
-            <option value="">All commodities</option>
+            <option value="">{tr("All commodities")}</option>
             {(catalog?.products ?? data?.products ?? []).map((p) => (
               <option key={p.name} value={p.name}>
                 {p.name}
@@ -106,7 +112,7 @@ export default function Dashboard() {
           <Button asChild>
             <Link href="/assistant">
               <Sparkles />
-              Ask AI
+              {tr(" Ask AI ")}
             </Link>
           </Button>
         </div>
@@ -114,7 +120,7 @@ export default function Dashboard() {
       {range === "custom" && (
         <div className="panel dashboard-date-fields">
           <label>
-            Dashboard from
+            {tr(" Dashboard from ")}
             <Input
               type="date"
               value={from}
@@ -122,7 +128,7 @@ export default function Dashboard() {
             />
           </label>
           <label>
-            Dashboard to
+            {tr(" Dashboard to ")}
             <Input
               type="date"
               value={to}
@@ -138,7 +144,7 @@ export default function Dashboard() {
               setTo("");
             }}
           >
-            Reset selection
+            {tr(" Reset selection ")}
           </Button>
         </div>
       )}
@@ -149,16 +155,27 @@ export default function Dashboard() {
       ) : (
         data && (
           <motion.div
+            className="dashboard-content"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
             <DataNotice mode={data.mode} latest={data.latest} />
             <p className="dataset-coverage">
-              Selected coverage: {data.daily[0]?.date ?? "No records"} →{" "}
-              {data.latest ?? "unavailable"} · Source import:{" "}
-              {data.latestImport ?? "unavailable"}. Latest available dates
-              describe this dataset, not a live market feed.
+              {tr(" Selected coverage: ")}
+              {data.daily[0]?.date
+                ? formatDate(data.daily[0].date)
+                : tr("No records")}{" "}
+              →{tr(" ")}
+              {data.latest ? formatDate(data.latest) : tr("unavailable")}
+              {tr(" \u00B7 Source import:")}
+              {tr(" ")}
+              {data.latestImport
+                ? formatDate(data.latestImport, true)
+                : tr("unavailable")}
+              {tr(
+                ". Latest available dates describe this dataset, not a live market feed. ",
+              )}
             </p>
             <GuidedDemo demo={data.demo} mode={data.mode} />
             <div className="kpi-grid">
@@ -176,7 +193,9 @@ export default function Dashboard() {
                     Object.entries(data.values)
                       .map(([c, v]) => `${number(v, true)} ${c}`)
                       .join(" · ") || "Unavailable",
-                  sub: `${data.excluded} records excluded · unmatched basis`,
+                  sub: tr("{count} records excluded · unmatched basis", {
+                    count: data.excluded,
+                  }),
                 },
                 {
                   title: "Traded quantity",
@@ -196,14 +215,14 @@ export default function Dashboard() {
               ].map((k) => (
                 <section className="kpi" key={k.title}>
                   <div className="kpi-title">
-                    {k.title}
+                    {tr(k.title)}
                     <k.icon size={16} />
                   </div>
                   <strong className="kpi-value">{k.value}</strong>
-                  <small>{k.sub}</small>
+                  <small>{tr(k.sub)}</small>
                   <div className="kpi-bottom">
                     <span className="tiny-dot" />
-                    Based on source records
+                    {tr(" Based on source records ")}
                   </div>
                 </section>
               ))}
@@ -212,15 +231,17 @@ export default function Dashboard() {
               <section className="panel activity-panel">
                 <div className="panel-heading">
                   <div>
-                    <h2>Transaction activity</h2>
+                    <h2>{tr("Transaction activity")}</h2>
                     <p>
                       {metric === "value"
-                        ? "Trade value"
+                        ? tr("Trade value")
                         : metric === "volume"
-                          ? "Traded quantity"
-                          : "Transaction count"}{" "}
-                      over time ·{" "}
-                      {metric === "count" ? "transactions" : selected}
+                          ? tr("Traded quantity")
+                          : tr("Transaction count")}
+                      {tr(" ")}
+                      {tr(" over time \u00B7")}
+                      {tr(" ")}
+                      {metric === "count" ? tr("transactions") : selected}
                     </p>
                   </div>
                   <div className="chart-switch">
@@ -234,10 +255,10 @@ export default function Dashboard() {
                         }}
                       >
                         {m === "value"
-                          ? "Value"
+                          ? tr("Value")
                           : m === "volume"
-                            ? "Volume"
-                            : "Count"}
+                            ? tr("Volume")
+                            : tr("Count")}
                       </button>
                     ))}
                   </div>
@@ -257,7 +278,7 @@ export default function Dashboard() {
                       : (metric === "value" ? data.values : data.quantities)[
                             selected
                           ] === undefined
-                        ? "Unavailable"
+                        ? tr("Unavailable")
                         : number(
                             (metric === "value"
                               ? data.values
@@ -265,10 +286,12 @@ export default function Dashboard() {
                             true,
                           )}
                   </strong>
-                  <span>{metric === "count" ? "transactions" : selected}</span>
+                  <span>
+                    {metric === "count" ? tr("transactions") : selected}
+                  </span>
                   {metric !== "count" && groups.length > 1 && (
                     <select
-                      aria-label="Chart unit or currency"
+                      aria-label={tr("Chart unit or currency")}
                       value={selected}
                       onChange={(e) => setGroup(e.target.value)}
                     >
@@ -277,7 +300,7 @@ export default function Dashboard() {
                       ))}
                     </select>
                   )}
-                  <span className="chart-period">Selected period</span>
+                  <span className="chart-period">{tr("Selected period")}</span>
                 </div>
                 {dashboardPoints(data, metric, selected).some(
                   (p) => p.value !== null,
@@ -289,27 +312,31 @@ export default function Dashboard() {
                   />
                 ) : (
                   <div className="chart-empty" role="status">
-                    No compatible chart observations are available. Missing data
-                    is not plotted as zero.
+                    {tr(
+                      " No compatible chart observations are available. Missing data is not plotted as zero. ",
+                    )}
                   </div>
                 )}
                 <div className="chart-foot">
                   <span>
-                    <i />{" "}
+                    <i />
+                    {tr(" ")}
                     {metric === "value"
-                      ? "Transaction value"
+                      ? tr("Transaction value")
                       : metric === "volume"
-                        ? "Quantity"
-                        : "Transaction count"}
+                        ? tr("Quantity")
+                        : tr("Transaction count")}
                   </span>
-                  <span>Daily aggregates · no currency conversion</span>
+                  <span>
+                    {tr("Daily aggregates \u00B7 no currency conversion")}
+                  </span>
                 </div>
               </section>
               <section className="panel commodity-panel">
                 <div className="panel-heading">
                   <div>
-                    <h2>Commodity mix</h2>
-                    <p>Share of transaction count</p>
+                    <h2>{tr("Commodity mix")}</h2>
+                    <p>{tr("Share of transaction count")}</p>
                   </div>
                   <Layers3 size={16} className="muted" />
                 </div>
@@ -320,11 +347,12 @@ export default function Dashboard() {
               <section className="panel recent-panel">
                 <div className="panel-heading">
                   <div>
-                    <h2>Recent transactions</h2>
-                    <p>The latest activity in your dataset</p>
+                    <h2>{tr("Recent transactions")}</h2>
+                    <p>{tr("The latest activity in your dataset")}</p>
                   </div>
                   <Link className="text-link" href="/trades">
-                    View all <ArrowUpRight size={14} />
+                    {tr(" View all ")}
+                    <ArrowUpRight size={14} />
                   </Link>
                 </div>
                 {recent.error ? (
@@ -336,9 +364,10 @@ export default function Dashboard() {
               <section className="panel insights-panel">
                 <div className="panel-heading">
                   <h2>
-                    <Sparkles size={17} className="mint" /> Intelligence brief
+                    <Sparkles size={17} className="mint" />
+                    {tr(" Intelligence brief ")}
                   </h2>
-                  <span className="ai-chip">DATA INSIGHTS</span>
+                  <span className="ai-chip">{tr("DATA INSIGHTS")}</span>
                 </div>
                 <div className="insight">
                   <span className="insight-icon">
@@ -348,28 +377,31 @@ export default function Dashboard() {
                     <strong>
                       {data.count ? (
                         <>
-                          {data.products[0]?.name ?? "No activity"} is among the
-                          most active
+                          {data.products[0]?.name ?? tr("No activity")}
+                          {tr(" is among the most active ")}
                         </>
                       ) : (
-                        "No supported activity observation"
+                        tr("No supported activity observation")
                       )}
                     </strong>
                     <p>
                       {data.count ? (
                         <>
-                          {data.products[0]?.count ?? 0} transactions,
-                          representing{" "}
+                          {data.products[0]?.count ?? 0}
+                          {tr(" transactions, representing")}
+                          {tr(" ")}
                           {data.count
                             ? Math.round(
                                 ((data.products[0]?.count ?? 0) / data.count) *
                                   100,
                               )
                             : 0}
-                          % of all records in this period.
+                          {tr(" % of all records in this period. ")}
                         </>
                       ) : (
-                        "No records match the selection. This does not establish that no trading occurred on the exchange."
+                        tr(
+                          "No records match the selection. This does not establish that no trading occurred on the exchange.",
+                        )
                       )}
                     </p>
                   </div>
@@ -379,15 +411,18 @@ export default function Dashboard() {
                     <CalendarDays size={15} />
                   </span>
                   <div>
-                    <strong>Understand the full picture</strong>
+                    <strong>{tr("Understand the full picture")}</strong>
                     <p>
-                      Latest record: {data.latest ?? "none"}. Imported records
-                      may not represent the entire exchange.
+                      {tr(" Latest record: ")}
+                      {data.latest ?? tr("none")}
+                      {tr(
+                        ". Imported records may not represent the entire exchange. ",
+                      )}
                     </p>
                   </div>
                 </div>
                 <Link className="insight-cta" href="/assistant">
-                  Explore these insights with AI
+                  {tr(" Explore these insights with AI ")}
                   <ChevronRight size={16} />
                 </Link>
               </section>
@@ -396,8 +431,8 @@ export default function Dashboard() {
               <section className="panel">
                 <div className="panel-heading">
                   <div>
-                    <h2>Daily transaction count</h2>
-                    <p>Number of records per trading date</p>
+                    <h2>{tr("Daily transaction count")}</h2>
+                    <p>{tr("Number of records per trading date")}</p>
                   </div>
                 </div>
                 <DailyBars data={data} />
@@ -405,8 +440,8 @@ export default function Dashboard() {
               <section className="panel">
                 <div className="panel-heading">
                   <div>
-                    <h2>Most active commodities</h2>
-                    <p>Ranked by number of transactions</p>
+                    <h2>{tr("Most active commodities")}</h2>
+                    <p>{tr("Ranked by number of transactions")}</p>
                   </div>
                 </div>
                 <div className="ranking">

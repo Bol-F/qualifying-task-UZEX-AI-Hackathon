@@ -15,7 +15,9 @@ export function useResource<T>(url: string) {
         if (!r.ok) throw new Error(body.error ?? "Request failed");
         return body as T;
       })
-      .then(value=>{if(!controller.signal.aborted)setData(value);})
+      .then((value) => {
+        if (!controller.signal.aborted) setData(value);
+      })
       .catch((e) => {
         if (e.name !== "AbortError") setError(e.message);
       })

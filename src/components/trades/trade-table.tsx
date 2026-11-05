@@ -1,8 +1,10 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useState } from "react";
 import { ArrowUpRight, Package, FileText } from "lucide-react";
 import type { Trade } from "@/types";
 import { number } from "@/lib/utils";
+import { fieldLabel } from "@/lib/i18n/field-labels";
 import {
   Sheet,
   SheetContent,
@@ -18,6 +20,7 @@ export function TradeTable({
   rows: Trade[];
   compact?: boolean;
 }) {
+  const { t: tr } = usePreferences();
   const [selected, setSelected] = useState<Trade | null>(null);
   return (
     <>
@@ -28,14 +31,14 @@ export function TradeTable({
           <table>
             <thead>
               <tr>
-                <th>COMMODITY</th>
-                {!compact && <th>TRANSACTION ID</th>}
-                <th>TRADE DATE</th>
-                <th className="numeric">QUANTITY</th>
-                <th className="numeric">UNIT PRICE</th>
-                <th>STATUS</th>
+                <th>{tr("COMMODITY")}</th>
+                {!compact && <th>{tr("TRANSACTION ID")}</th>}
+                <th>{tr("TRADE DATE")}</th>
+                <th className="numeric">{tr("QUANTITY")}</th>
+                <th className="numeric">{tr("UNIT PRICE")}</th>
+                <th>{tr("STATUS")}</th>
                 <th>
-                  <span className="sr-only">Details</span>
+                  <span className="sr-only">{tr("Details")}</span>
                 </th>
               </tr>
             </thead>
@@ -68,8 +71,8 @@ export function TradeTable({
                   <td className="numeric mono">
                     {number(t.price)}
                     <small>
-                      {t.currency ?? "Unknown currency"} /{" "}
-                      {t.price_unit ?? "unknown basis"}
+                      {t.currency ?? tr("Unknown currency")} /{tr(" ")}
+                      {t.price_unit ?? tr("unknown basis")}
                     </small>
                   </td>
                   <td>
@@ -82,7 +85,7 @@ export function TradeTable({
                   </td>
                   <td>
                     <button
-                      aria-label={`View ${t.external_id ?? t.id}`}
+                      aria-label={tr(`View ${t.external_id ?? t.id}`)}
                       className="icon-button"
                       onClick={() => setSelected(t)}
                     >
@@ -104,9 +107,10 @@ export function TradeTable({
         <SheetContent className="detail-sheet">
           <SheetHeader>
             <FileText className="mint" />
-            <SheetTitle>Transaction details</SheetTitle>
+            <SheetTitle>{tr("Transaction details")}</SheetTitle>
             <SheetDescription>
-              {selected?.external_id ?? selected?.id} · Source record
+              {selected?.external_id ?? selected?.id}
+              {tr(" \u00B7 Source record ")}
             </SheetDescription>
           </SheetHeader>
           {selected && (
@@ -120,14 +124,15 @@ export function TradeTable({
               <dl>
                 {Object.entries(selected).map(([key, value]) => (
                   <div key={key}>
-                    <dt>{key.replaceAll("_", " ")}</dt>
-                    <dd>{value ?? "Not provided"}</dd>
+                    <dt>{tr(fieldLabel(key))}</dt>
+                    <dd>{value ?? tr("Not provided")}</dd>
                   </div>
                 ))}
               </dl>
               <p className="muted">
-                Price × quantity is valid only when the price basis matches the
-                quantity unit. Contract numbers may repeat.
+                {tr(
+                  " Price \u00D7 quantity is valid only when the price basis matches the quantity unit. Contract numbers may repeat. ",
+                )}
               </p>
             </div>
           )}

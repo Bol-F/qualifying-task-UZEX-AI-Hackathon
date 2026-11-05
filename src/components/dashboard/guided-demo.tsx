@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -16,6 +17,7 @@ export function GuidedDemo({
   demo: ReturnType<typeof demoQuestions>;
   mode: string;
 }) {
+  const { t: tr } = usePreferences();
   const [visible, setVisible] = useState(false);
   useEffect(
     () => setVisible(localStorage.getItem("uzex-demo-dismissed") !== "yes"),
@@ -24,7 +26,7 @@ export function GuidedDemo({
   if (!visible)
     return (
       <button className="reopen-demo" onClick={() => setVisible(true)}>
-        Show guided demo
+        {tr(" Show guided demo ")}
         <ArrowUpRight size={12} />
       </button>
     );
@@ -32,22 +34,26 @@ export function GuidedDemo({
     <section className="guided-demo">
       <div className="guided-heading">
         <div>
-          <h2>Your first insight starts here.</h2>
+          <h2>{tr("Your first insight starts here.")}</h2>
           <p>
-            UZEX Insight AI turns exchange records into searchable analytics,
-            bilingual answers and source-backed reports.
+            {tr(
+              " UZEX Insight AI turns exchange records into searchable analytics, bilingual answers and source-backed reports. ",
+            )}
           </p>
           <p>
             {mode === "demo"
-              ? "Explore a clearly labeled synthetic dataset."
-              : "Explore your imported source records."}{" "}
+              ? tr("Explore a clearly labeled synthetic dataset.")
+              : tr("Explore your imported source records.")}
+            {tr(" ")}
             {demo.date
-              ? `This walkthrough uses available records from ${demo.date}.`
-              : "No stored records are currently available."}
+              ? tr("This walkthrough uses records from {date}.", {
+                  date: demo.date,
+                })
+              : tr("No stored records are currently available.")}
           </p>
         </div>
         <button
-          aria-label="Dismiss guided demo"
+          aria-label={tr("Dismiss guided demo")}
           onClick={() => {
             setVisible(false);
             localStorage.setItem("uzex-demo-dismissed", "yes");
@@ -81,15 +87,15 @@ export function GuidedDemo({
             <span className="guided-number">0{i + 1}</span>
             <item.icon size={17} />
             <div>
-              <strong>{item.label}</strong>
-              <small>{item.caption}</small>
+              <strong>{tr(item.label)}</strong>
+              <small>{tr(item.caption)}</small>
             </div>
             <ArrowUpRight size={15} />
           </Link>
         ))}
       </div>
       <div className="judge-question">
-        <span>JUDGE WALKTHROUGH</span>
+        <span>{tr("JUDGE WALKTHROUGH")}</span>
         <Link
           href={"/assistant?question=" + encodeURIComponent(demo.questions[0])}
         >

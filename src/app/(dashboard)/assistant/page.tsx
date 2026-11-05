@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useState, useEffect, useRef } from "react";
 import {
   Sparkles,
@@ -20,8 +21,9 @@ import { useAgentChat } from "@/hooks/use-agent-chat";
 import { useResource } from "@/hooks/use-resource";
 import { EvidenceResponse } from "@/components/assistant/evidence-response";
 export default function Assistant() {
-  const [language, setLanguage] = useState<Language>("uz"),
-    [input, setInput] = useState("");
+  const { t: tr, language: uiLanguage } = usePreferences();
+  const language: Language = uiLanguage === "ru" ? "ru" : "uz";
+  const [input, setInput] = useState("");
   const {
     conversations,
     active,
@@ -35,9 +37,10 @@ export default function Assistant() {
     regenerate,
     clearConversation,
   } = useAgentChat(language);
-  const readiness = useResource<{ aiConfigured: boolean; aiMode?: string }>(
-    "/api/health",
-  );
+  const readiness = useResource<{
+    aiConfigured: boolean;
+    aiMode?: string;
+  }>("/api/health");
   const bottom = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const question = new URLSearchParams(window.location.search).get(
@@ -62,28 +65,10 @@ export default function Assistant() {
       <div className="page-heading">
         <div>
           <h1>
-            AI Assistant
-            <span className="ai-chip heading-chip">INSIGHT ENGINE</span>
+            {tr(" AI Assistant ")}
+            <span className="ai-chip heading-chip">{tr("INSIGHT ENGINE")}</span>
           </h1>
-          <p>Your market questions. Answers backed by evidence.</p>
-        </div>
-        <div
-          className="language-switch"
-          role="group"
-          aria-label="Assistant language"
-        >
-          <button
-            className={language === "uz" ? "selected" : ""}
-            onClick={() => setLanguage("uz")}
-          >
-            O‘zbekcha
-          </button>
-          <button
-            className={language === "ru" ? "selected" : ""}
-            onClick={() => setLanguage("ru")}
-          >
-            Русский
-          </button>
+          <p>{tr("Your market questions. Answers backed by evidence.")}</p>
         </div>
       </div>
       <div className="assistant-layout">
@@ -95,13 +80,13 @@ export default function Assistant() {
             onClick={newChat}
           >
             <Plus />
-            New conversation
+            {tr(" New conversation ")}
           </Button>
-          <div className="nav-caption">RECENT CONVERSATIONS</div>
+          <div className="nav-caption">{tr("RECENT CONVERSATIONS")}</div>
           <div className="history-items">
             {conversations.length === 0 ? (
               <p className="history-empty">
-                Your conversations will appear here.
+                {tr(" Your conversations will appear here. ")}
               </p>
             ) : (
               conversations.map((chat) => (
@@ -121,9 +106,9 @@ export default function Assistant() {
           </div>
           <div className="history-footer">
             <ShieldCheck size={16} />
-            <p>History is saved in this browser only.</p>
+            <p>{tr("History is saved in this browser only.")}</p>
             <button
-              aria-label="Clear chat history"
+              aria-label={tr("Clear chat history")}
               disabled={busy}
               onClick={() => {
                 void clearConversation(true);
@@ -133,11 +118,11 @@ export default function Assistant() {
             </button>
           </div>
         </aside>
-        <section className="chat-main" lang={language}>
+        <section className="chat-main" lang={uiLanguage}>
           <div className="chat-top">
             <button
               className="icon-button"
-              aria-label="Clear conversation"
+              aria-label={tr("Clear conversation")}
               disabled={busy || !active}
               onClick={() => clearConversation()}
             >
@@ -145,17 +130,22 @@ export default function Assistant() {
             </button>
             <span>
               <span className="status-dot" />
-              UZEX Insight
+              {tr(" UZEX Insight ")}
             </span>
             <small>
-              <Database size={12} />7 read-only tools · Evidence mode
+              <Database size={12} />
+              {tr("Answers linked to source records")}
             </small>
           </div>
           {readiness.data && !readiness.data.aiConfigured && (
             <div className="assistant-readiness" role="status">
               {readiness.data.aiMode === "local"
-                ? "Local tool mode is active. Gemini interpretation is not active."
-                : "Gemini is not configured. Local data tools are available; model-generated interpretation is unavailable."}
+                ? tr(
+                    "Local tool mode is active. Gemini interpretation is not active.",
+                  )
+                : tr(
+                    "Gemini is not configured. Local data tools are available; model-generated interpretation is unavailable.",
+                  )}
             </div>
           )}
           <div className="conversation" aria-live="polite">
@@ -165,22 +155,30 @@ export default function Assistant() {
                   <Sparkles size={32} />
                 </div>
                 <span className="welcome-caption">
-                  YOUR MARKET INTELLIGENCE PARTNER
+                  {tr(" YOUR MARKET INTELLIGENCE PARTNER ")}
                 </span>
-                <h2>{c.hello}</h2>
-                <p>{c.sub}</p>
+                <h2>
+                  {uiLanguage === "en"
+                    ? tr("Ask a question about your data.")
+                    : c.hello}
+                </h2>
+                <p>
+                  {tr(
+                    "Ask in Uzbek or Russian. Every answer links to its sources.",
+                  )}
+                </p>
                 <div className="suggestions">
                   {c.questions.map((q, i) => (
                     <button key={q} onClick={() => send(q)}>
                       <span className="suggestion-category">
-                        {
+                        {tr(
                           [
                             "MARKET ACTIVITY",
                             "COMMODITY SEARCH",
                             "DAILY SUMMARY",
                             "DATE COMPARISON",
-                          ][i]
-                        }
+                          ][i],
+                        )}
                       </span>
                       <span>{q}</span>
                       <ArrowUpRight size={16} />
@@ -189,7 +187,7 @@ export default function Assistant() {
                 </div>
                 <div className="grounding-note">
                   <ShieldCheck size={14} />
-                  Database grounded · Uzbek & Russian · No arbitrary SQL
+                  {tr("Answers from your dataset \u00B7 Uzbek & Russian")}
                 </div>
               </div>
             ) : (
@@ -200,11 +198,11 @@ export default function Assistant() {
                   lang={m.answer?.language}
                 >
                   <div className="message-avatar">
-                    {m.role === "assistant" ? <Sparkles size={16} /> : "UZ"}
+                    {m.role === "assistant" ? <Sparkles size={16} /> : tr("UZ")}
                   </div>
                   <div className="message-body">
                     <div className="message-label">
-                      {m.role === "assistant" ? "UZEX Insight" : "You"}
+                      {m.role === "assistant" ? tr("UZEX Insight") : tr("You")}
                       <small>{m.engine}</small>
                     </div>
                     <div className="markdown">
@@ -235,8 +233,9 @@ export default function Assistant() {
                             hour: "2-digit",
                             minute: "2-digit",
                           },
-                        )}{" "}
-                        UZT
+                        )}
+                        {tr(" ")}
+                        {tr(" UZT ")}
                       </time>
                     )}
                     {m.answer && <EvidenceResponse answer={m.answer} />}
@@ -249,7 +248,7 @@ export default function Assistant() {
                           onClick={regenerate}
                         >
                           <RotateCcw />
-                          Regenerate answer
+                          {tr(" Regenerate answer ")}
                         </Button>
                         {m.answer?.followUps.map((q) => (
                           <button
@@ -274,23 +273,23 @@ export default function Assistant() {
                 </div>
                 <div className="thinking">
                   <LoaderCircle size={16} className="spin" />
-                  {activity || "Checking source records…"}
+                  {tr(activity || "Checking source records…")}
                 </div>
               </div>
             )}
             {error && (
               <div className="chat-error" role="alert">
-                <span>{error}</span>
+                <span>{tr(error)}</span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => send(messages.at(-1)?.content ?? "", true)}
                 >
                   <RotateCcw />
-                  Retry
+                  {tr(" Retry ")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={newChat}>
-                  New conversation
+                  {tr(" New conversation ")}
                 </Button>
               </div>
             )}
@@ -305,8 +304,12 @@ export default function Assistant() {
               }}
             >
               <textarea
-                aria-label="Message to assistant"
-                placeholder={c.placeholder}
+                aria-label={tr("Message to assistant")}
+                placeholder={
+                  uiLanguage === "en"
+                    ? tr("Ask about trades, products or daily activity…")
+                    : c.placeholder
+                }
                 value={input}
                 maxLength={6000}
                 disabled={busy}
@@ -322,12 +325,12 @@ export default function Assistant() {
               <div className="composer-bottom">
                 <span>
                   <Sparkles size={12} />
-                  Ask in your language
+                  {tr(" Ask in your language ")}
                 </span>
                 <Button
                   type="submit"
                   size="icon"
-                  aria-label="Send message"
+                  aria-label={tr("Send message")}
                   disabled={!input.trim() || busy}
                 >
                   <ArrowUp />
@@ -335,8 +338,9 @@ export default function Assistant() {
               </div>
             </form>
             <p>
-              Answers reflect the available dataset. Synthetic records are
-              always labeled. Verify source records before acting.
+              {tr(
+                " Answers reflect the available dataset. Synthetic records are always labeled. Verify source records before acting. ",
+              )}
             </p>
           </div>
         </section>

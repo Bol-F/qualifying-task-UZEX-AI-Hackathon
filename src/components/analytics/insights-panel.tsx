@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useState } from "react";
 import Link from "next/link";
 import { Sparkles, ArrowUpRight, LoaderCircle } from "lucide-react";
@@ -8,6 +9,7 @@ import type { explainFacts } from "@/lib/ai/report-explanations";
 import { sourceLink } from "@/lib/analytics/source-links";
 type Commentary = Awaited<ReturnType<typeof explainFacts>>;
 export function InsightsPanel({ data }: { data: WorkspaceData }) {
+  const { t: tr } = usePreferences();
   const [result, setResult] = useState<{
       snapshot: WorkspaceData;
       commentary: Commentary;
@@ -40,37 +42,44 @@ export function InsightsPanel({ data }: { data: WorkspaceData }) {
         <div>
           <h2>
             <Sparkles size={17} className="mint" />
-            AI Insights
+            {tr(" AI Insights ")}
           </h2>
-          <p>Calculated facts first. Gemini can explain their context.</p>
+          <p>
+            {tr("Calculated facts first. Gemini can explain their context.")}
+          </p>
         </div>
         <Button variant="outline" size="sm" onClick={explain} disabled={busy}>
-          {busy ? <LoaderCircle className="spin" /> : <Sparkles />}Explain
-          calculated facts
+          {busy ? <LoaderCircle className="spin" /> : <Sparkles />}
+          {tr("Explain calculated facts ")}
         </Button>
       </div>
       {view.facts.length ? (
         view.facts.map((f) => (
           <article className="fact-row" key={f.id}>
-            <span className="ai-chip">CALCULATED OBSERVATION</span>
-            <p>{f.statement}</p>
+            <span className="ai-chip">{tr("CALCULATED OBSERVATION")}</span>
+            <p>{tr(f.statement)}</p>
             {result?.commentary.items
               .filter((i) => i.factId === f.id)
               .map((item, i) => (
                 <p className="fact-explanation" key={i}>
-                  {item.text}
+                  {tr(item.text)}
                 </p>
               ))}
             <div className="fact-evidence">
               <span>
-                Metric {f.value} · baseline {f.baseline} {f.unit}
+                {tr(" Metric ")}
+                {f.value}
+                {tr(" \u00B7 baseline ")}
+                {f.baseline} {f.unit}
               </span>
               <span>
-                Coverage {f.coverage.from} → {f.coverage.to} ·{" "}
-                {f.coverage.records} records
+                {tr(" Coverage ")}
+                {f.coverage.from} → {f.coverage.to} ·{tr(" ")}
+                {f.coverage.records}
+                {tr(" records ")}
               </span>
               <Link href={sourceLink(view.selection, f.filters)}>
-                Inspect supporting trades
+                {tr(" Inspect supporting trades ")}
                 <ArrowUpRight size={12} />
               </Link>
             </div>
@@ -78,7 +87,7 @@ export function InsightsPanel({ data }: { data: WorkspaceData }) {
         ))
       ) : (
         <div className="empty-source">
-          No observations can be supported by this selection.
+          {tr(" No observations can be supported by this selection. ")}
         </div>
       )}
       {result && (
@@ -86,18 +95,22 @@ export function InsightsPanel({ data }: { data: WorkspaceData }) {
           className="workspace-warning"
           role={result.commentary.warning ? "status" : undefined}
         >
-          {result.commentary.warning ??
-            "Gemini selected the explanatory framing. All figures remain calculated from records."}
+          {result.commentary.warning
+            ? tr(result.commentary.warning)
+            : tr(
+                "Gemini selected the explanatory framing. All figures remain calculated from records.",
+              )}
         </p>
       )}
       {error && (
         <p className="workspace-warning" role="alert">
-          {error}
+          {tr(error)}
         </p>
       )}
       <p className="panel-footnote">
-        Dataset observations describe available records and are not independent
-        financial advice.
+        {tr(
+          " Dataset observations describe available records and are not independent financial advice. ",
+        )}
       </p>
     </section>
   );

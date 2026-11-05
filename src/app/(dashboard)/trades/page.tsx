@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useEffect, useState, useRef } from "react";
 import {
   Search,
@@ -17,6 +18,7 @@ import { Loading, ErrorState } from "@/components/layout/resource-state";
 import { DataNotice } from "@/components/layout/data-notice";
 import type { Trade } from "@/types";
 export default function Trades() {
+  const { t: tr } = usePreferences();
   const [search, setSearch] = useState(""),
     [debounced, setDebounced] = useState(""),
     [from, setFrom] = useState(""),
@@ -142,8 +144,8 @@ export default function Trades() {
     <>
       <div className="page-heading">
         <div>
-          <h1>Trade explorer</h1>
-          <p>Every transaction. Every detail. One clear view.</p>
+          <h1>{tr("Transactions")}</h1>
+          <p>{tr("Find a transaction by product, contract or source ID.")}</p>
         </div>
         <Button
           variant="outline"
@@ -156,14 +158,15 @@ export default function Trades() {
           }
         >
           <Download />
-          {exporting ? "Exporting…" : "Export CSV"}
+          {exporting ? tr("Exporting…") : tr("Export CSV")}
         </Button>
       </div>
       <DataNotice mode={data?.mode ?? "unknown"} />
       {sourceProducts.length > 0 && (
         <p className="dataset-coverage">
-          Selected commodities: {sourceProducts.join(" · ")}. Clear filters to
-          explore all records.
+          {tr(" Selected commodities: ")}
+          {sourceProducts.join(" · ")}
+          {tr(". Clear filters to explore all records. ")}
         </p>
       )}
       <section className="panel explorer">
@@ -171,9 +174,11 @@ export default function Trades() {
           <div className="search-field">
             <Search size={17} />
             <Input
-              aria-label="Search trades"
+              aria-label={tr("Search trades")}
               ref={searchInput}
-              placeholder="Search commodity, transaction or contract…"
+              placeholder={tr(
+                "Search commodity, transaction or contract\u2026",
+              )}
               value={search}
               onChange={(e) => {
                 setExactProduct("");
@@ -190,37 +195,37 @@ export default function Trades() {
             aria-expanded={advanced}
           >
             <SlidersHorizontal />
-            Filters
+            {tr(" Filters ")}
           </Button>
           <select
-            aria-label="Sort by"
+            aria-label={tr("Sort by")}
             value={sort}
             onChange={(e) => {
               setSort(e.target.value);
               setPage(1);
             }}
           >
-            <option value="trade_date">Trade date</option>
-            <option value="price">Unit price</option>
-            <option value="quantity">Quantity</option>
-            <option value="product_name">Commodity</option>
+            <option value="trade_date">{tr("Trade date")}</option>
+            <option value="price">{tr("Unit price")}</option>
+            <option value="quantity">{tr("Quantity")}</option>
+            <option value="product_name">{tr("Commodity")}</option>
           </select>
           <select
-            aria-label="Sort order"
+            aria-label={tr("Sort order")}
             value={order}
             onChange={(e) => {
               setOrder(e.target.value);
               setPage(1);
             }}
           >
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
+            <option value="desc">{tr("Descending")}</option>
+            <option value="asc">{tr("Ascending")}</option>
           </select>
         </div>
         {advanced && (
           <div className="filter-row">
             <label>
-              From date
+              {tr(" From date ")}
               <Input
                 type="date"
                 value={from}
@@ -231,7 +236,7 @@ export default function Trades() {
               />
             </label>
             <label>
-              To date
+              {tr(" To date ")}
               <Input
                 type="date"
                 value={to}
@@ -242,9 +247,9 @@ export default function Trades() {
               />
             </label>
             <label>
-              Currency
+              {tr(" Currency ")}
               <select
-                aria-label="Currency"
+                aria-label={tr("Currency")}
                 value={currency}
                 onChange={(e) => {
                   setCurrency(e.target.value);
@@ -255,18 +260,18 @@ export default function Trades() {
                   setPage(1);
                 }}
               >
-                <option value="">All currencies</option>
-                <option>UZS</option>
-                <option>USD</option>
-                <option>EUR</option>
-                <option>RUB</option>
+                <option value="">{tr("All currencies")}</option>
+                <option>{tr("UZS")}</option>
+                <option>{tr("USD")}</option>
+                <option>{tr("EUR")}</option>
+                <option>{tr("RUB")}</option>
               </select>
             </label>
             <label>
-              Quoted price basis
+              {tr(" Quoted price basis ")}
               <Input
                 value={priceUnit}
-                placeholder="Any basis (e.g. t)"
+                placeholder={tr("Any basis (e.g. t)")}
                 maxLength={30}
                 onChange={(e) => {
                   setPriceUnit(e.target.value);
@@ -279,10 +284,10 @@ export default function Trades() {
               />
             </label>
             <label>
-              Reported quantity unit
+              {tr(" Reported quantity unit ")}
               <Input
                 value={unit}
-                placeholder="Any unit (e.g. t)"
+                placeholder={tr("Any unit (e.g. t)")}
                 maxLength={30}
                 onChange={(e) => {
                   setUnit(e.target.value);
@@ -291,10 +296,10 @@ export default function Trades() {
               />
             </label>
             <label>
-              Contract type
+              {tr(" Contract type ")}
               <Input
                 value={contractType}
-                placeholder="All types"
+                placeholder={tr("All types")}
                 maxLength={64}
                 onChange={(e) => {
                   setContractType(e.target.value);
@@ -303,7 +308,7 @@ export default function Trades() {
               />
             </label>
             <label>
-              Minimum unit price
+              {tr(" Minimum unit price ")}
               <Input
                 type="number"
                 min="0"
@@ -317,7 +322,7 @@ export default function Trades() {
               />
             </label>
             <label>
-              Maximum unit price
+              {tr(" Maximum unit price ")}
               <Input
                 type="number"
                 min="0"
@@ -343,22 +348,24 @@ export default function Trades() {
             ]
               .filter(Boolean)
               .map((label) => (
-                <span key={String(label)}>{label}</span>
+                <span key={String(label)}>{tr(String(label))}</span>
               ))}
           </div>
         )}
         {advanced && (
           <p className="filter-help">
-            Price ranges require a currency and quoted price basis. Sorting
-            retains reported units; values with different units are not directly
-            comparable.
+            {tr(
+              " Price ranges require a currency and quoted price basis. Sorting retains reported units; values with different units are not directly comparable. ",
+            )}
           </p>
         )}
         <div className="results-bar">
           <span>
-            <strong>{data?.total ?? "—"}</strong> transactions{" "}
+            <strong>{data?.total ?? tr("—")}</strong>
+            {tr(" transactions")}
+            {tr(" ")}
             <span className="muted">
-              ·{" "}
+              ·{tr(" ")}
               {search ||
               from ||
               to ||
@@ -368,13 +375,13 @@ export default function Trades() {
               unit ||
               priceUnit ||
               contractType
-                ? "Filtered results"
-                : "All available records"}
+                ? tr("Filtered results")
+                : tr("All available records")}
             </span>
           </span>
           <button onClick={clear} className="text-link">
             <RotateCcw size={13} />
-            Clear filters
+            {tr(" Clear filters ")}
           </button>
         </div>
         {loading ? (
@@ -387,8 +394,10 @@ export default function Trades() {
         <div className="pagination">
           <span>
             {data?.total
-              ? `${(page - 1) * 12 + 1}–${Math.min(page * 12, data.total)} of ${data.total}`
-              : "0 records"}
+              ? tr(
+                  `${(page - 1) * 12 + 1}–${Math.min(page * 12, data.total)} of ${data.total}`,
+                )
+              : tr("0 records")}
           </span>
           <div>
             <Button
@@ -398,24 +407,28 @@ export default function Trades() {
               onClick={() => setPage((p) => p - 1)}
             >
               <ChevronLeft />
-              Previous
+              {tr(" Previous ")}
             </Button>
-            <span>Page {page}</span>
+            <span>
+              {tr("Page ")}
+              {page}
+            </span>
             <Button
               variant="outline"
               size="sm"
               disabled={!data || page * 12 >= data.total || loading}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              {tr(" Next ")}
               <ChevronRight />
             </Button>
           </div>
         </div>
       </section>
       <p className="page-note">
-        Unit prices retain their original basis. Compare prices only across
-        matching currencies and units.
+        {tr(
+          " Unit prices retain their original basis. Compare prices only across matching currencies and units. ",
+        )}
       </p>
     </>
   );

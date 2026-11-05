@@ -1,0 +1,33 @@
+// Display labels only. API/query keys and source values remain unchanged.
+const labels: Record<string, string> = {
+  id: "Record ID",
+  external_id: "External transaction ID",
+  contract_number: "Contract number",
+  trade_date: "Trade date",
+  product_name: "Product name",
+  normalized_product_name: "Search name",
+  price: "Unit price",
+  quantity: "Quantity",
+  unit: "Quantity unit",
+  price_unit: "Price basis",
+  currency: "Currency",
+  contract_type: "Contract type",
+  execution_status: "Execution status",
+  data_source: "Data source",
+  imported_at: "Imported at",
+  search: "Search",
+  from: "From date",
+  to: "To date",
+  contractNumber: "Contract number",
+  minQuantity: "Minimum quantity",
+  maxQuantity: "Maximum quantity",
+  minPrice: "Minimum unit price",
+  maxPrice: "Maximum unit price",
+  status: "Execution status",
+  sort: "Sort by",
+  order: "Sort order",
+  metric: "Analysis metric",
+  limit: "Result limit",
+};
+export const fieldLabel = (key: string) =>
+  Object.hasOwn(labels, key) ? labels[key] : key.replaceAll("_", " ");

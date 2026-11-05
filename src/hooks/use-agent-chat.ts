@@ -8,6 +8,7 @@ import {
   type AgentAnswer,
 } from "@/lib/ai/contracts";
 import type { Language } from "@/lib/i18n";
+import { usePreferences } from "@/components/layout/preferences-provider";
 const messageSchema = z.object({
   role: z.enum(["user", "assistant"]),
   content: z.string().max(12000),
@@ -32,6 +33,7 @@ const activityLabels: Record<string, string> = {
   explain_exchange_term: "Checking approved sources",
 };
 export function useAgentChat(language: Language) {
+  const { t } = usePreferences();
   const [conversations, setConversations] = useState<Conversation[]>([]),
     [active, setActive] = useState(""),
     [messages, setMessages] = useState<ChatMessage[]>([]),
@@ -47,7 +49,17 @@ export function useAgentChat(language: Language) {
           "[]",
       );
       const parsed = z.array(conversationSchema).max(30).safeParse(raw);
-      if (parsed.success) setConversations(parsed.data.slice(0, 10));
+      if (parsed.success) {
+        const saved = parsed.data.slice(0, 10);
+        setConversations(saved);
+        const selected = saved.find(
+          (chat) => chat.id === localStorage.getItem("uzex-active-chat-v2"),
+        );
+        if (selected) {
+          setActive(selected.id);
+          setMessages(selected.messages);
+        }
+      }
     } catch {}
     setReady(true);
   }, []);
@@ -58,10 +70,11 @@ export function useAgentChat(language: Language) {
           "uzex-chats-v2",
           JSON.stringify(conversations.slice(0, 10)),
         );
+        localStorage.setItem("uzex-active-chat-v2", active);
       } catch {
-        toast.error("Conversation could not be saved locally");
+        toast.error(t("Conversation could not be saved locally"));
       }
-  }, [conversations, ready]);
+  }, [conversations, active, ready, t]);
   function save(id: string, list: ChatMessage[]) {
     setConversations((prev) =>
       [
@@ -97,9 +110,9 @@ export function useAgentChat(language: Language) {
         all ? [] : prev.filter((c) => c.id !== active),
       );
       newChat();
-      toast.success(all ? "History cleared" : "Conversation cleared");
+      toast.success(t(all ? "History cleared" : "Conversation cleared"));
     } catch {
-      toast.error("Could not clear the conversation. Try again.");
+      toast.error(t("Could not clear the conversation. Try again."));
     }
   }
   function select(chat: Conversation) {

@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -27,6 +28,7 @@ const ComparisonBars = dynamic(
   { ssr: false },
 );
 export function MarketExplorer() {
+  const { t: tr, formatDate } = usePreferences();
   const [from, setFrom] = useState(""),
     [to, setTo] = useState(""),
     [products, setProducts] = useState<string[]>([]),
@@ -81,10 +83,10 @@ export function MarketExplorer() {
       <div className="page-heading">
         <div>
           <h1>
-            Market explorer
+            {tr(" Market analysis ")}
             <span className="heading-dot" />
           </h1>
-          <p>Compare what matters. Follow every observation to its source.</p>
+          <p>{tr("Choose products and dates, then compare their activity.")}</p>
         </div>
         <div className="heading-actions">
           <Button
@@ -101,16 +103,16 @@ export function MarketExplorer() {
               setCompare(false);
             }}
           >
-            Reset analysis
+            {tr(" Reset analysis ")}
           </Button>
           <Button size="sm" variant="outline" onClick={resource.retry}>
             <RefreshCw />
-            Refresh
+            {tr(" Refresh ")}
           </Button>
           <Button asChild>
             <Link href={"/reports?" + params}>
               <FileText />
-              Generate AI Report
+              {tr(" Generate AI Report ")}
             </Link>
           </Button>
         </div>
@@ -120,7 +122,7 @@ export function MarketExplorer() {
         <div
           className="workspace-tabs"
           role="tablist"
-          aria-label="Analytics sections"
+          aria-label={tr("Analytics sections")}
         >
           {[
             ["market", "Market analysis"],
@@ -133,13 +135,13 @@ export function MarketExplorer() {
               key={key}
               onClick={() => setTab(key)}
             >
-              {label}
+              {tr(label)}
             </button>
           ))}
         </div>
         <div className="workspace-filters">
           <label>
-            From date
+            {tr(" From date ")}
             <Input
               type="date"
               value={from}
@@ -147,7 +149,7 @@ export function MarketExplorer() {
             />
           </label>
           <label>
-            To date
+            {tr(" To date ")}
             <Input
               type="date"
               value={to}
@@ -155,19 +157,19 @@ export function MarketExplorer() {
             />
           </label>
           <label>
-            Analysis metric
+            {tr(" Analysis metric ")}
             <select
               value={metric}
               onChange={(e) => changeMetric(e.target.value as typeof metric)}
             >
-              <option value="count">Transaction count</option>
-              <option value="value">Valid trade value</option>
-              <option value="quantity">Reported volume</option>
+              <option value="count">{tr("Transaction count")}</option>
+              <option value="value">{tr("Valid trade value")}</option>
+              <option value="quantity">{tr("Reported volume")}</option>
             </select>
           </label>
           {metric === "value" && (
             <label>
-              Value currency
+              {tr(" Value currency ")}
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
@@ -183,7 +185,7 @@ export function MarketExplorer() {
           )}
           {metric === "quantity" && (
             <label>
-              Measurement unit
+              {tr(" Measurement unit ")}
               <select value={unit} onChange={(e) => setUnit(e.target.value)}>
                 {(data?.options.units.length ? data.options.units : ["t"]).map(
                   (u) => (
@@ -194,13 +196,13 @@ export function MarketExplorer() {
             </label>
           )}
           <label>
-            Contract type
+            {tr(" Contract type ")}
             <select
-              aria-label="Contract type"
+              aria-label={tr("Contract type")}
               value={contract}
               onChange={(e) => setContract(e.target.value)}
             >
-              <option value="">All types</option>
+              <option value="">{tr("All types")}</option>
               {data?.options.contractTypes.map((c) => (
                 <option key={c}>{c}</option>
               ))}
@@ -209,9 +211,12 @@ export function MarketExplorer() {
         </div>
         <fieldset className="commodity-picker">
           <legend>
-            Compare commodities{" "}
+            {tr(" Compare commodities")}
+            {tr(" ")}
             <span>
-              Choose up to three · none selects the leading available series
+              {tr(
+                " Choose up to three \u00B7 none selects the leading available series ",
+              )}
             </span>
           </legend>
           {data?.options.products.map((p) => (
@@ -247,17 +252,18 @@ export function MarketExplorer() {
                 }
               }}
             />
-            Compare against a baseline
+            {tr(" Compare against a baseline ")}
           </label>
           <span>
-            Selected − baseline; percentage is unavailable for missing or zero
-            baselines.
+            {tr(
+              " Selected \u2212 baseline; percentage is unavailable for missing or zero baselines. ",
+            )}
           </span>
         </div>
         {compare && (
           <div className="workspace-filters baseline-filters">
             <label>
-              Baseline from
+              {tr(" Baseline from ")}
               <Input
                 type="date"
                 value={compareFrom}
@@ -265,7 +271,7 @@ export function MarketExplorer() {
               />
             </label>
             <label>
-              Baseline to
+              {tr(" Baseline to ")}
               <Input
                 type="date"
                 value={compareTo}
@@ -273,24 +279,24 @@ export function MarketExplorer() {
               />
             </label>
             <label>
-              Baseline commodity
+              {tr(" Baseline commodity ")}
               <select
                 value={compareProduct}
                 onChange={(e) => setCompareProduct(e.target.value)}
               >
-                <option value="">Same commodities</option>
+                <option value="">{tr("Same commodities")}</option>
                 {data?.options.products.map((p) => (
                   <option key={p}>{p}</option>
                 ))}
               </select>
             </label>
             <label>
-              Baseline contract type
+              {tr(" Baseline contract type ")}
               <select
                 value={compareContract}
                 onChange={(e) => setCompareContract(e.target.value)}
               >
-                <option value="">Same contract types</option>
+                <option value="">{tr("Same contract types")}</option>
                 {data?.options.contractTypes.map((p) => (
                   <option key={p}>{p}</option>
                 ))}
@@ -314,27 +320,25 @@ export function MarketExplorer() {
               <>
                 <div className="workspace-stat-strip">
                   <div>
-                    <span>Selected metric</span>
+                    <span>{tr("Selected metric")}</span>
                     <strong>
                       {data.measure.value === null
-                        ? "Unavailable"
-                        : number(data.measure.value, true)}{" "}
-                      <small>{data.measure.unit}</small>
+                        ? tr("Unavailable")
+                        : number(data.measure.value, true)}
+                      {tr(" ")}
+                      <small>{tr(data.measure.unit)}</small>
                     </strong>
                   </div>
                   <div>
-                    <span>Underlying records</span>
+                    <span>{tr("Underlying records")}</span>
                     <strong>{number(data.selectedCount)}</strong>
                   </div>
                   <div>
-                    <span>Source updated</span>
+                    <span>{tr("Source updated")}</span>
                     <strong className="date-value">
                       {data.coverage.latestImport
-                        ? new Date(data.coverage.latestImport).toLocaleString(
-                            "en-GB",
-                            { timeZone: "Asia/Tashkent" },
-                          )
-                        : "Not available"}
+                        ? formatDate(data.coverage.latestImport, true)
+                        : tr("Not available")}
                     </strong>
                   </div>
                 </div>
@@ -343,24 +347,27 @@ export function MarketExplorer() {
                     <div>
                       <h2>
                         <ChartNoAxesCombined size={17} className="mint" />
-                        Commodity activity
+                        {tr(" Commodity activity ")}
                       </h2>
-                      <p>{data.definition}</p>
+                      <p>{tr(data.definition)}</p>
                     </div>
                   </div>
                   <MarketSeries data={data} />
                   <details className="workspace-data-table">
                     <summary>
-                      Inspect chart observations and source links
+                      {tr(" Inspect chart observations and source links ")}
                     </summary>
                     <div className="table-scroll">
                       <table>
                         <thead>
                           <tr>
-                            <th>Commodity</th>
-                            <th>Date</th>
-                            <th>Value ({data.measure.unit})</th>
-                            <th>Source</th>
+                            <th>{tr("Commodity")}</th>
+                            <th>{tr("Date")}</th>
+                            <th>
+                              {tr("Value (")}
+                              {tr(data.measure.unit)})
+                            </th>
+                            <th>{tr("Source")}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -368,8 +375,8 @@ export function MarketExplorer() {
                             s.points.map((p) => (
                               <tr key={s.name + p.label}>
                                 <td>{s.name}</td>
-                                <td>{p.label}</td>
-                                <td>{p.value ?? "Unavailable"}</td>
+                                <td>{tr(p.label)}</td>
+                                <td>{p.value ?? tr("Unavailable")}</td>
                                 <td>
                                   <Link
                                     className="text-link"
@@ -387,7 +394,7 @@ export function MarketExplorer() {
                                       })
                                     }
                                   >
-                                    Source trades
+                                    {tr(" Source trades ")}
                                     <ArrowUpRight size={13} />
                                   </Link>
                                 </td>
@@ -403,10 +410,11 @@ export function MarketExplorer() {
                   <section className="panel">
                     <div className="panel-heading">
                       <div>
-                        <h2>Selection vs baseline</h2>
+                        <h2>{tr("Selection vs baseline")}</h2>
                         <p>
-                          Absolute and relative change from stored, comparable
-                          observations.
+                          {tr(
+                            " Absolute and relative change from stored, comparable observations. ",
+                          )}
                         </p>
                       </div>
                     </div>
@@ -423,20 +431,24 @@ export function MarketExplorer() {
                         ],
                       ].map(([name, value]) => (
                         <div key={name}>
-                          <span>{name}</span>
+                          <span>{tr(name ?? "")}</span>
                           <strong>
-                            {value === null ? "Unavailable" : value}
+                            {value === null ? tr("Unavailable") : value}
                           </strong>
                         </div>
                       ))}
                     </div>
                     <p className="panel-footnote">
-                      Counts: {data.comparison.current.records} selected /{" "}
-                      {data.comparison.baseline.records} baseline records.
+                      {tr(" Counts: ")}
+                      {data.comparison.current.records}
+                      {tr(" selected /")}
+                      {tr(" ")}
+                      {data.comparison.baseline.records}
+                      {tr(" baseline records. ")}
                     </p>
                     {data.comparison.warnings.map((w) => (
                       <p className="workspace-warning" key={w}>
-                        {w}
+                        {tr(w)}
                       </p>
                     ))}
                   </section>
@@ -444,7 +456,16 @@ export function MarketExplorer() {
                 <div className="workspace-two-columns">
                   <section className="panel">
                     <div className="panel-heading">
-                      <h2>Top commodities · {metric}</h2>
+                      <h2>
+                        {tr("Top commodities \u00B7 ")}
+                        {tr(
+                          metric === "count"
+                            ? "Transaction count"
+                            : metric === "value"
+                              ? "Value"
+                              : "Quantity",
+                        )}
+                      </h2>
                     </div>
                     <div className="ranking">
                       {data.breakdown.map((p, i) => (
@@ -461,9 +482,10 @@ export function MarketExplorer() {
                           <strong>{p.name}</strong>
                           <span>
                             {p.value === null
-                              ? "Unavailable"
-                              : number(p.value, true)}{" "}
-                            {p.unit}
+                              ? tr("Unavailable")
+                              : number(p.value, true)}
+                            {tr(" ")}
+                            {tr(p.unit)}
                           </span>
                           <ArrowUpRight size={13} />
                         </Link>
@@ -472,15 +494,18 @@ export function MarketExplorer() {
                   </section>
                   <section className="panel">
                     <div className="panel-heading">
-                      <h2>Analysis notes</h2>
+                      <h2>{tr("Analysis notes")}</h2>
                     </div>
                     {data.warnings.map((w) => (
                       <p className="workspace-warning" key={w}>
-                        {w}
+                        {tr(w)}
                       </p>
                     ))}
                     <p className="panel-footnote">
-                      Snapshot {data.fingerprint.slice(0, 16)} · refreshed{" "}
+                      {tr(" Snapshot ")}
+                      {data.fingerprint.slice(0, 16)}
+                      {tr(" \u00B7 refreshed")}
+                      {tr(" ")}
                       {new Date(data.generatedAt).toLocaleTimeString()}
                     </p>
                   </section>
@@ -488,7 +513,10 @@ export function MarketExplorer() {
                 <section className="panel">
                   <div className="panel-heading">
                     <h2>
-                      Source sample · {data.rows.length} of {data.selectedCount}
+                      {tr(" Source sample \u00B7 ")}
+                      {data.rows.length}
+                      {tr(" of ")}
+                      {data.selectedCount}
                     </h2>
                   </div>
                   <ComparisonBars data={data} />

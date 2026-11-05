@@ -10,28 +10,54 @@ import {
   PanelLeftOpen,
   Database,
   ArrowUpRight,
-  ChevronDown,
   Layers,
-  Command,
   ShieldCheck,
   ChartNoAxesCombined,
   FileText,
+  Sun,
+  Moon,
+  Globe2,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePreferences } from "./preferences-provider";
+import { parseUiLanguage } from "@/lib/i18n/preferences";
 const nav = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/assistant", label: "AI Assistant", icon: Sparkles },
-  { href: "/trades", label: "Trade Explorer", icon: ArrowLeftRight },
-  { href: "/analytics", label: "Market Explorer", icon: ChartNoAxesCombined },
-  { href: "/reports", label: "Reports", icon: FileText },
+  {
+    href: "/dashboard",
+    label: "Overview",
+    mobile: "Home",
+    icon: LayoutDashboard,
+  },
+  {
+    href: "/assistant",
+    label: "AI Assistant",
+    mobile: "Ask AI",
+    icon: Sparkles,
+  },
+  {
+    href: "/trades",
+    label: "Transactions",
+    mobile: "Trades",
+    icon: ArrowLeftRight,
+  },
+  {
+    href: "/analytics",
+    label: "Analytics",
+    mobile: "Analytics",
+    icon: ChartNoAxesCombined,
+  },
+  { href: "/reports", label: "Reports", mobile: "Reports", icon: FileText },
 ];
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname(),
     [collapsed, setCollapsed] = useState(false);
+  const { theme, setTheme, language, setLanguage, t } = usePreferences();
+  const active = nav.find((item) => item.href === path);
   return (
     <div className={cn("app-shell", collapsed && "collapsed")}>
       <a className="skip-link" href="#main-content">
-        Skip to content
+        {t("Skip to content")}
       </a>
       <aside className="sidebar">
         <Link
@@ -43,91 +69,113 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <Layers size={25} />
           </span>
           <span className="brand-copy">
-            UZEX{" "}
+            UZEX
             <span className="brand-insight">
               Insight<span className="ai-label">AI</span>
             </span>
           </span>
         </Link>
         <div className="workspace">
-          <span className="workspace-icon">U</span>
+          <span className="workspace-icon">
+            <Database size={16} />
+          </span>
           <div>
-            <strong>Market intelligence</strong>
-            <small>UZEX workspace</small>
+            <strong>{t("Market intelligence")}</strong>
+            <small>{t("Your analytics workspace")}</small>
           </div>
-          <ChevronDown size={14} />
         </div>
-        <div className="nav-caption">WORKSPACE</div>
-        <nav aria-label="Main navigation">
-          {nav.map((n) => (
+        <div className="nav-caption">{t("WORKSPACE")}</div>
+        <nav aria-label={t("Main navigation")}>
+          {nav.map((item) => (
             <Link
-              key={n.href}
-              href={n.href}
-              title={n.label}
-              aria-current={path === n.href ? "page" : undefined}
-              aria-label={n.label}
-              className={cn("nav-link", path === n.href && "active")}
+              key={item.href}
+              href={item.href}
+              title={t(item.label)}
+              aria-label={t(item.label)}
+              aria-current={path === item.href ? "page" : undefined}
+              className={cn("nav-link", path === item.href && "active")}
             >
-              <n.icon size={18} />
-              <span>{n.label}</span>
-              {n.href === "/assistant" && (
-                <small className="new-label">AI</small>
-              )}
+              <item.icon size={19} />
+              <span className="nav-desktop-label">{t(item.label)}</span>
+              <span className="nav-mobile-label">{t(item.mobile)}</span>
             </Link>
           ))}
         </nav>
         <div className="sidebar-bottom">
           <div className="research-note">
             <ShieldCheck size={20} />
-            <strong>Built on evidence.</strong>
-            <p>
-              Every number has a source.
-              <br />
-              Every insight has context.
-            </p>
+            <strong>{t("Every answer has a source.")}</strong>
+            <p>{t("Open any result to see the records behind it.")}</p>
             <Link href="/assistant">
-              Explore with AI <ArrowUpRight size={14} />
+              {t("Ask a question")}
+              <ArrowUpRight size={14} />
             </Link>
-          </div>
-          <div className="source-mini">
-            <Database size={16} />
-            <div>
-              <strong>Transparent data sources</strong>
-              <small>Verify mode on each page</small>
-            </div>
           </div>
           <button
             className="collapse-button"
             onClick={() => setCollapsed(!collapsed)}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-expanded={!collapsed}
+            aria-label={t(collapsed ? "Expand sidebar" : "Collapse sidebar")}
           >
             {collapsed ? (
               <PanelLeftOpen size={17} />
             ) : (
               <PanelLeftClose size={17} />
             )}
-            <span>Collapse sidebar</span>
+            <span>{t("Collapse sidebar")}</span>
           </button>
         </div>
       </aside>
       <div className="main-shell">
         <header className="topbar">
           <div className="breadcrumb">
-            <span>Workspace</span>
-            <span>/</span>
-            <strong>{nav.find((n) => n.href === path)?.label}</strong>
+            <Link
+              className="mobile-brand"
+              href="/dashboard"
+              aria-label="UZEX Insight AI home"
+            >
+              <Layers size={21} />
+              <strong>UZEX</strong>
+            </Link>
+            <span>{t("Workspace")}</span>
+            <ChevronRight size={13} />
+            <strong>{t(active?.label ?? "Overview")}</strong>
           </div>
           <div className="topbar-right">
-            <span className="terminal-label">
-              <span className="status-dot" />
-              Intelligence workspace
-            </span>
-            <span className="top-divider" />
-            <div className="avatar">UZ</div>
-            <span className="profile-name">
-              Analyst
-              <ChevronDown size={13} />
-            </span>
+            <label className="navbar-language">
+              <Globe2 size={16} />
+              <span className="sr-only">{t("Interface language")}</span>
+              <select
+                data-testid="language-select"
+                aria-label={t("Interface language")}
+                value={language}
+                onChange={(event) =>
+                  setLanguage(parseUiLanguage(event.target.value))
+                }
+              >
+                <option value="en">English</option>
+                <option value="uz">O‘zbekcha</option>
+                <option value="ru">Русский</option>
+              </select>
+            </label>
+            <button
+              data-testid="theme-toggle"
+              className="theme-toggle"
+              aria-label={t(
+                theme === "light"
+                  ? "Switch to dark mode"
+                  : "Switch to light mode",
+              )}
+              title={t(
+                theme === "light"
+                  ? "Switch to dark mode"
+                  : "Switch to light mode",
+              )}
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            >
+              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+              <span>{t(theme === "light" ? "Dark mode" : "Light mode")}</span>
+            </button>
           </div>
         </header>
         <main id="main-content" tabIndex={-1}>
@@ -135,12 +183,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </main>
         <footer>
           <span>
-            UZEX Insight AI <span className="footer-dot">·</span> Commodity
-            intelligence, made clear.
+            UZEX Insight AI <span className="footer-dot">·</span>{" "}
+            {t("Understand your market data.")}
           </span>
-          <span>
-            <Command size={12} /> UZEX AI Hackathon 2026
-          </span>
+          <span>{t("UZEX AI Hackathon 2026")}</span>
         </footer>
       </div>
     </div>

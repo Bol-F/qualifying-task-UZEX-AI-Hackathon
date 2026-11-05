@@ -12,11 +12,11 @@
   font-size: 11px;
   padding: 11px 13px;
   border-radius: 5px;
-  color: #819bb7;
+  color: var(--muted-foreground);
 }
 .workspace-tabs [aria-selected="true"] {
-  color: #15d6a0;
-  background: #15d6a00c;
+  color: var(--primary);
+  background: var(--primary-soft);
 }
 .workspace-filters {
   display: flex;
@@ -31,7 +31,7 @@
   flex-direction: column;
   gap: 8px;
   font-size: 10px;
-  color: #8ba0bb;
+  color: var(--muted-foreground);
 }
 .workspace-filters select {
   width: 100%;
@@ -48,11 +48,11 @@
 }
 .commodity-picker legend {
   font-size: 10px;
-  color: #afc0d5;
+  color: var(--foreground);
   padding: 0 7px 0 0;
 }
 .commodity-picker legend span {
-  color: #5c7998;
+  color: var(--muted-foreground);
   font-size: 9px;
   margin-left: 8px;
 }
@@ -64,16 +64,16 @@
   border: 1px solid var(--border);
   border-radius: 5px;
   font-size: 10px;
-  color: #8da7c1;
+  color: var(--foreground);
   cursor: pointer;
 }
 .commodity-picker label:has(input:checked) {
-  border-color: #15d6a044;
-  color: #b5e6d7;
-  background: #15d6a008;
+  border-color: var(--primary-border);
+  color: var(--primary);
+  background: var(--primary-soft);
 }
 input[type="checkbox"] {
-  accent-color: #15d6a0;
+  accent-color: var(--primary);
 }
 .comparison-toggle {
   display: flex;
@@ -83,7 +83,7 @@ input[type="checkbox"] {
   padding: 15px 19px;
   border-top: 1px solid var(--border);
   font-size: 10px;
-  color: #8fa7c2;
+  color: var(--foreground);
 }
 .comparison-toggle label {
   display: flex;
@@ -92,10 +92,10 @@ input[type="checkbox"] {
 }
 .comparison-toggle > span {
   font-size: 9px;
-  color: #5e7b9a;
+  color: var(--muted-foreground);
 }
 .baseline-filters {
-  background: #0c1626;
+  background: var(--surface);
 }
 .workspace-content {
   display: flex;
@@ -107,7 +107,7 @@ input[type="checkbox"] {
   display: grid;
   grid-template-columns: 1.25fr 0.8fr 1fr;
   border: 1px solid var(--border);
-  background: #111c2e;
+  background: var(--card);
   border-radius: 8px;
   padding: 20px;
 }
@@ -126,7 +126,7 @@ input[type="checkbox"] {
 .comparison-metrics span {
   display: block;
   font-size: 10px;
-  color: #7f99b7;
+  color: var(--muted-foreground);
   margin-bottom: 10px;
 }
 .workspace-stat-strip strong {
@@ -136,7 +136,7 @@ input[type="checkbox"] {
 }
 .workspace-stat-strip small {
   font-size: 10px;
-  color: #85a2bc;
+  color: var(--muted-foreground);
 }
 .workspace-stat-strip .date-value {
   font-size: 14px;
@@ -152,15 +152,15 @@ input[type="checkbox"] {
   font-size: 11px;
   line-height: 1.8;
   padding: 12px 19px;
-  color: #b6a37d;
-  background: #fbbf2404;
-  border-left: 2px solid #fbbf2420;
+  color: var(--warning);
+  background: var(--warning-soft);
+  border-left: 2px solid var(--warning-border);
   margin: 10px 17px;
   border-radius: 3px;
 }
 .panel-footnote {
   font-size: 9px;
-  color: #62809f;
+  color: var(--muted-foreground);
   padding: 15px 19px;
   line-height: 1.8;
   border-top: 1px solid var(--border);
@@ -172,13 +172,13 @@ input[type="checkbox"] {
 .chart-help {
   font-size: 9px;
   line-height: 1.6;
-  color: #6a87a5;
+  color: var(--muted-foreground);
   margin: 14px 8px 0;
 }
 .workspace-data-table > summary,
 .method-details > summary {
   font-size: 10px;
-  color: #8ba8c6;
+  color: var(--foreground);
   padding: 14px 19px;
   border-top: 1px solid var(--border);
   cursor: pointer;
@@ -209,7 +209,7 @@ input[type="checkbox"] {
 .fact-row > p {
   font-size: 13px;
   line-height: 1.9;
-  color: #c1d2e6;
+  color: var(--foreground);
   margin-top: 11px;
   max-width: 900px;
 }
@@ -218,7 +218,7 @@ input[type="checkbox"] {
   gap: 11px;
   flex-wrap: wrap;
   font-size: 9px;
-  color: #6685a4;
+  color: var(--muted-foreground);
   line-height: 1.6;
   margin-top: 14px;
 }
@@ -226,22 +226,22 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #53c9aa;
+  color: var(--primary);
 }
 .fact-row .fact-explanation {
   font-size: 11px;
-  color: #8ea7c2;
-  border-left: 2px solid #15d6a040;
+  color: var(--foreground);
+  border-left: 2px solid var(--primary-border);
   padding-left: 12px;
 }
 .pattern-count {
   font-size: 24px;
   font-weight: 500;
-  color: #7ca8bf;
+  color: var(--foreground);
 }
 .method-details ul {
   font-size: 11px;
-  color: #8aa5c1;
+  color: var(--foreground);
   line-height: 2.1;
   padding: 0 38px 15px;
 }
@@ -251,7 +251,7 @@ input[type="checkbox"] {
 }
 .pattern-row small {
   font-size: 8px;
-  color: #baaa7a;
+  color: var(--warning);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -275,7 +275,7 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #57c5a9;
+  color: var(--primary);
   font-size: 10px;
 }
 .pattern-empty {
@@ -285,18 +285,18 @@ input[type="checkbox"] {
   gap: 14px;
   padding: 45px 25px;
   text-align: center;
-  color: #587a92;
+  color: var(--muted-foreground);
 }
 .pattern-empty h3 {
   font-size: 15px;
   font-weight: 400;
-  color: #b7c9de;
+  color: var(--foreground);
 }
 .pattern-empty p {
   max-width: 530px;
   font-size: 11px;
   line-height: 1.9;
-  color: #7591ad;
+  color: var(--muted-foreground);
 }
 .chart-actions {
   display: flex;
@@ -310,7 +310,7 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #7394b2;
+  color: var(--muted-foreground);
 }
 .chart-actions select {
   padding: 5px 8px;
@@ -320,12 +320,12 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #8cabc5;
+  color: var(--foreground);
 }
 .guided-demo {
-  border: 1px solid #15d6a025;
+  border: 1px solid var(--primary-border);
   border-radius: 9px;
-  background: #10212b;
+  background: var(--surface);
   padding: 20px;
   margin-bottom: 20px;
 }
@@ -342,12 +342,12 @@ input[type="checkbox"] {
 }
 .guided-heading p {
   font-size: 10px;
-  color: #7898ac;
+  color: var(--muted-foreground);
   line-height: 1.8;
   margin-top: 7px;
 }
 .guided-heading > button {
-  color: #658a9c;
+  color: var(--muted-foreground);
 }
 .guided-actions {
   display: grid;
@@ -360,37 +360,37 @@ input[type="checkbox"] {
   align-items: center;
   gap: 10px;
   padding: 14px;
-  background: #0d1928;
-  border: 1px solid #ffffff0c;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 7px;
   transition: border-color 0.2s;
 }
 .guided-actions a:hover {
-  border-color: #15d6a060;
+  border-color: var(--primary-border);
 }
 .guided-actions svg {
-  color: #47d2ae;
+  color: var(--primary);
 }
 .guided-actions strong {
   font-size: 10px;
   font-weight: 500;
-  color: #c5dbde;
+  color: var(--foreground);
   display: block;
 }
 .guided-actions small {
   display: block;
-  color: #65879b;
+  color: var(--muted-foreground);
   font-size: 9px;
   line-height: 1.7;
   margin-top: 5px;
 }
 .guided-actions > a > svg:last-child {
   margin-left: auto;
-  color: #536e84;
+  color: var(--muted-foreground);
 }
 .guided-number {
   font-size: 9px;
-  color: #466d78;
+  color: var(--muted-foreground);
   align-self: flex-start;
 }
 .judge-question {
@@ -403,20 +403,20 @@ input[type="checkbox"] {
 .judge-question > span {
   font-size: 7px;
   letter-spacing: 1.2px;
-  color: #648c9d;
+  color: var(--muted-foreground);
 }
 .judge-question a {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #88c4b3;
+  color: var(--primary);
 }
 .reopen-demo {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 9px;
-  color: #719f99;
+  color: var(--muted-foreground);
   margin-bottom: 15px;
 }
 .report-controls .report-generate {
@@ -430,7 +430,7 @@ input[type="checkbox"] {
 .report-generate p {
   font-size: 10px;
   line-height: 1.8;
-  color: #6a88a6;
+  color: var(--muted-foreground);
 }
 .report-empty {
   display: flex;
@@ -438,30 +438,30 @@ input[type="checkbox"] {
   align-items: center;
   gap: 18px;
   padding: 80px 20px;
-  color: #365d71;
+  color: var(--muted-foreground);
   text-align: center;
 }
 .report-empty h2 {
   font-weight: 400;
   font-size: 23px;
-  color: #bbcede;
+  color: var(--foreground);
   letter-spacing: -0.4px;
 }
 .report-empty p {
   font-size: 11px;
   max-width: 410px;
   line-height: 1.9;
-  color: #728ca7;
+  color: var(--muted-foreground);
 }
 .report-empty > span {
   font-size: 9px;
-  color: #506f8b;
+  color: var(--muted-foreground);
 }
 .analytics-report {
   margin: 25px auto;
   max-width: 1100px;
   padding: 34px;
-  background: #111c2e;
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 10px;
 }
@@ -475,7 +475,7 @@ input[type="checkbox"] {
 .report-wordmark {
   font-size: 10px;
   letter-spacing: 2px;
-  color: #15d6a0;
+  color: var(--primary);
 }
 .report-title h1 {
   font-size: 28px;
@@ -485,10 +485,10 @@ input[type="checkbox"] {
 }
 .report-title p {
   font-size: 10px;
-  color: #7895b1;
+  color: var(--muted-foreground);
 }
 .report-title > svg {
-  color: #3d6976;
+  color: var(--muted-foreground);
 }
 .analytics-report > section {
   margin: 27px 0;
@@ -497,7 +497,7 @@ input[type="checkbox"] {
   font-size: 15px;
   font-weight: 500;
   margin-bottom: 16px;
-  color: #d1e1ee;
+  color: var(--foreground);
   border-bottom: 1px solid var(--border);
   padding-bottom: 12px;
 }
@@ -505,7 +505,7 @@ input[type="checkbox"] {
 .analytics-report li {
   font-size: 11px;
   line-height: 1.9;
-  color: #97adc5;
+  color: var(--foreground);
 }
 .report-coverage {
   display: grid;
@@ -514,14 +514,14 @@ input[type="checkbox"] {
 }
 .report-coverage dt {
   font-size: 9px;
-  color: #5f7d9b;
+  color: var(--muted-foreground);
   margin-bottom: 7px;
 }
 .report-coverage dd {
   font-size: 11px;
   overflow-wrap: anywhere;
   margin: 0;
-  color: #bbcede;
+  color: var(--foreground);
 }
 .report-kpis {
   display: flex;
@@ -538,7 +538,7 @@ input[type="checkbox"] {
 }
 .report-kpis span {
   font-size: 9px;
-  color: #7b98b3;
+  color: var(--muted-foreground);
   display: block;
 }
 .report-kpis strong {
@@ -548,7 +548,7 @@ input[type="checkbox"] {
 }
 .report-kpis small {
   font-size: 8px;
-  color: #617c96;
+  color: var(--muted-foreground);
   overflow-wrap: anywhere;
 }
 .report-fact {
@@ -557,19 +557,19 @@ input[type="checkbox"] {
 }
 .report-fact small {
   font-size: 9px;
-  color: #607d98;
+  color: var(--muted-foreground);
   line-height: 1.8;
 }
 .report-source-list {
   font-size: 8px;
-  color: #597a94;
+  color: var(--muted-foreground);
   line-height: 1.9;
   margin-top: 15px;
   overflow-wrap: anywhere;
 }
 .report-footer {
   font-size: 8px;
-  color: #4b6e86;
+  color: var(--muted-foreground);
   border-top: 1px solid var(--border);
   padding-top: 20px;
   overflow-wrap: anywhere;

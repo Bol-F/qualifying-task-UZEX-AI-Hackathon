@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useEffect } from "react";
 import {
   ResponsiveContainer,
@@ -15,40 +16,45 @@ import {
 import { useRouter } from "next/navigation";
 import type { WorkspaceData } from "@/lib/analytics/service";
 import { number } from "@/lib/utils";
-const colors = ["#15d6a0", "#3b82f6", "#a78bfa"];
+const colors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"];
 export function ComparisonBars({ data }: { data: WorkspaceData }) {
+  const { t: tr } = usePreferences();
   const view = data.comparison;
   if (!view) return null;
   const points = [
     {
-      name: "Baseline",
+      name: tr("Baseline"),
       value: view.baseline.value === null ? null : Number(view.baseline.value),
     },
     {
-      name: "Selected",
+      name: tr("Selected"),
       value: view.current.value === null ? null : Number(view.current.value),
     },
   ];
   return (
-    <div aria-label="Selection and baseline comparison chart">
+    <div aria-label={tr("Selection and baseline comparison chart")}>
       <ResponsiveContainer width="100%" height={190}>
         <BarChart data={points} margin={{ left: 20, right: 20 }}>
-          <CartesianGrid vertical={false} stroke="#233046" />
-          <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#94a3b8" }} />
+          <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 10, fill: "var(--chart-axis)" }}
+          />
           <YAxis
-            tick={{ fontSize: 10, fill: "#94a3b8" }}
+            tick={{ fontSize: 10, fill: "var(--chart-axis)" }}
             allowDecimals={data.selection.metric !== "count"}
             tickFormatter={(v) => number(v, true)}
           />
           <Tooltip
             contentStyle={{
-              background: "#17243a",
-              border: "1px solid #304058",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
             }}
           />
           <Bar
             dataKey="value"
-            fill="#3b82f6"
+            name={tr(data.measure.unit)}
+            fill="var(--chart-2)"
             radius={[4, 4, 0, 0]}
             isAnimationActive={false}
           />
@@ -66,6 +72,7 @@ export function MarketSeries({
   drill?: boolean;
   onReady?: () => void;
 }) {
+  const { t: tr } = usePreferences();
   useEffect(() => {
     let second = 0;
     const frame = requestAnimationFrame(() => {
@@ -85,8 +92,8 @@ export function MarketSeries({
   )
     return (
       <div className="pattern-empty">
-        <h3>No chart observations available</h3>
-        <p>Unavailable observations are not plotted as zero.</p>
+        <h3>{tr("No chart observations available")}</h3>
+        <p>{tr("Unavailable observations are not plotted as zero.")}</p>
       </div>
     );
   const dates = [
@@ -102,7 +109,10 @@ export function MarketSeries({
     ]),
   );
   return (
-    <div className="market-series" aria-label="Commodity comparison chart">
+    <div
+      className="market-series"
+      aria-label={tr("Commodity comparison chart")}
+    >
       <ResponsiveContainer width="100%" height={280}>
         <LineChart
           data={points}
@@ -110,28 +120,28 @@ export function MarketSeries({
         >
           <CartesianGrid
             vertical={false}
-            stroke="#233046"
+            stroke="var(--chart-grid)"
             strokeDasharray="3 4"
           />
           <XAxis
             dataKey="date"
-            tick={{ fill: "#94a3b8", fontSize: 10 }}
+            tick={{ fill: "var(--chart-axis)", fontSize: 10 }}
             minTickGap={30}
           />
           <YAxis
             allowDecimals={data.selection.metric !== "count"}
-            tick={{ fill: "#94a3b8", fontSize: 10 }}
+            tick={{ fill: "var(--chart-axis)", fontSize: 10 }}
             tickFormatter={(v) => number(v, true)}
             width={58}
           />
           <Tooltip
             contentStyle={{
-              background: "#17243a",
-              border: "1px solid #304058",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
               borderRadius: 8,
             }}
             formatter={(value, name) => [
-              value === null ? "Unavailable" : number(String(value)),
+              value === null ? tr("Unavailable") : number(String(value)),
               name,
             ]}
           />
@@ -149,7 +159,11 @@ export function MarketSeries({
               activeDot={{
                 r: 6,
                 onClick: (_event: unknown, payload: unknown) => {
-                  const point = payload as { payload?: { date?: string } };
+                  const point = payload as {
+                    payload?: {
+                      date?: string;
+                    };
+                  };
                   if (drill && point.payload?.date) {
                     const p = new URLSearchParams({
                       productName: series.name,
@@ -175,8 +189,9 @@ export function MarketSeries({
       </ResponsiveContainer>
       {drill && (
         <p className="chart-help">
-          Select an active chart point to open its source trades. Exact
-          observations are also linked in the table below.
+          {tr(
+            " Select an active chart point to open its source trades. Exact observations are also linked in the table below. ",
+          )}
         </p>
       )}
     </div>

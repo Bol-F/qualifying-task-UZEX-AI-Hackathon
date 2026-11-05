@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import {
   AreaChart,
   Area,
@@ -17,24 +18,24 @@ import type { Analytics } from "@/lib/analytics/calculations";
 import { number } from "@/lib/utils";
 import { dashboardPoints } from "@/lib/analytics/chart-data";
 const colors = [
-  "#15d6a0",
-  "#3b82f6",
-  "#a78bfa",
-  "#38bdf8",
-  "#fbbf24",
-  "#fb7185",
-  "#64748b",
-  "#cbd5e1",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
+  "var(--chart-axis)",
+  "var(--chart-7)",
 ];
 const tooltip = {
   contentStyle: {
-    background: "#17243a",
-    border: "1px solid #2a3a50",
+    background: "var(--card)",
+    border: "1px solid var(--border)",
     borderRadius: 8,
-    color: "#f1f5f9",
+    color: "var(--foreground)",
   },
-  labelStyle: { color: "#94a3b8" },
-  itemStyle: { color: "#15d6a0" },
+  labelStyle: { color: "var(--chart-axis)" },
+  itemStyle: { color: "var(--chart-1)" },
 };
 export function ActivityChart({
   data,
@@ -45,6 +46,7 @@ export function ActivityChart({
   metric: "count" | "value" | "volume";
   group: string;
 }) {
+  const { t: tr } = usePreferences();
   const points = dashboardPoints(data, metric, group);
   return (
     <ResponsiveContainer width="100%" height={210}>
@@ -54,25 +56,25 @@ export function ActivityChart({
       >
         <defs>
           <linearGradient id="activity-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#15d6a0" stopOpacity={0.22} />
-            <stop offset="100%" stopColor="#15d6a0" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.22} />
+            <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid
           vertical={false}
-          stroke="#233046"
+          stroke="var(--chart-grid)"
           strokeDasharray="3 4"
         />
         <XAxis
           dataKey="date"
           tickFormatter={(v) => String(v).slice(5)}
-          tick={{ fill: "#7f91aa", fontSize: 11 }}
+          tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           minTickGap={30}
         />
         <YAxis
-          tick={{ fill: "#7f91aa", fontSize: 11 }}
+          tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
           axisLine={false}
           tickLine={false}
           tickFormatter={(v) => number(v, true)}
@@ -82,12 +84,16 @@ export function ActivityChart({
         <Tooltip
           {...tooltip}
           formatter={(v) => [
-            v === null ? "Unavailable" : `${number(String(v))} ${group}`,
-            metric === "count"
-              ? "Transactions"
-              : metric === "value"
-                ? "Trade value"
-                : "Quantity",
+            v === null
+              ? tr("Unavailable")
+              : `${number(String(v))} ${tr(group)}`,
+            tr(
+              metric === "count"
+                ? "Transactions"
+                : metric === "value"
+                  ? "Trade value"
+                  : "Quantity",
+            ),
           ]}
         />
         <Area
@@ -95,16 +101,17 @@ export function ActivityChart({
           connectNulls={false}
           type="monotone"
           dataKey="value"
-          stroke="#15d6a0"
+          stroke="var(--chart-1)"
           strokeWidth={2.5}
           fill="url(#activity-fill)"
-          activeDot={{ r: 5, stroke: "#0b1120", strokeWidth: 3 }}
+          activeDot={{ r: 5, stroke: "var(--card)", strokeWidth: 3 }}
         />
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 export function CommodityChart({ data }: { data: Analytics }) {
+  const { t: tr } = usePreferences();
   return (
     <>
       <div className="donut-wrap">
@@ -129,7 +136,7 @@ export function CommodityChart({ data }: { data: Analytics }) {
         </ResponsiveContainer>
         <div className="donut-center">
           <strong>{data.products.length}</strong>
-          <small>commodities</small>
+          <small>{tr("commodities")}</small>
         </div>
       </div>
       <div className="chart-legend">
@@ -147,6 +154,7 @@ export function CommodityChart({ data }: { data: Analytics }) {
   );
 }
 export function DailyBars({ data }: { data: Analytics }) {
+  const { t: tr } = usePreferences();
   return (
     <ResponsiveContainer width="100%" height={160}>
       <BarChart
@@ -155,17 +163,17 @@ export function DailyBars({ data }: { data: Analytics }) {
           count: d.count,
         }))}
       >
-        <CartesianGrid vertical={false} stroke="#233046" />
+        <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
         <XAxis
           dataKey="date"
-          tick={{ fill: "#7f91aa", fontSize: 10 }}
+          tick={{ fill: "var(--chart-axis)", fontSize: 10 }}
           axisLine={false}
           tickLine={false}
           minTickGap={35}
         />
         <YAxis
           allowDecimals={false}
-          tick={{ fill: "#7f91aa", fontSize: 10 }}
+          tick={{ fill: "var(--chart-axis)", fontSize: 10 }}
           axisLine={false}
           tickLine={false}
           width={25}
@@ -174,8 +182,8 @@ export function DailyBars({ data }: { data: Analytics }) {
         <Bar
           isAnimationActive={false}
           dataKey="count"
-          name="Transactions"
-          fill="#3b82f6"
+          name={tr("Transactions")}
+          fill="var(--chart-2)"
           radius={[3, 3, 0, 0]}
         />
       </BarChart>

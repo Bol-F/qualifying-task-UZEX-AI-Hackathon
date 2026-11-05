@@ -4,6 +4,10 @@ A Next.js financial analytics application with an evidence-grounded Uzbek / Russ
 
 Explore stored transactions, compare commodities and trading periods, ask bilingual questions with inspectable evidence, investigate transparent statistical patterns, and print an analytics briefing. The first-visit guide supplies questions adapted to actual available records.
 
+The interface opens in a white, emerald and blue **light theme**. Use the top navbar to switch **light / dark mode** and **English / O‘zbekcha / Русский** across all five workspaces. Both preferences survive navigation and reload. Original transaction names, identifiers, quantities and prices stay unchanged. The assistant answers data questions in Uzbek or Russian, following the latest question's language.
+
+Navigation uses plain labels and a labeled bottom bar on mobile. Reports start with dates and commodities; optional comparison and contract filters expand when needed. Returning to the assistant restores the last open conversation. No additional services or credentials are needed for these interface preferences.
+
 Submission package: [architecture](ARCHITECTURE.md), [three-minute demo and working feature checklist](DEMO_GUIDE.md), [release audit and test results](TEST_REPORT.md). Screenshots under `docs/screenshots` show the real application and retain synthetic-data labels.
 
 ## Run

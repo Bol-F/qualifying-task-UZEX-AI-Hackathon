@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/components/layout/preferences-provider";
 import { useState } from "react";
 import Link from "next/link";
 import { Download } from "lucide-react";
@@ -23,12 +24,12 @@ import {
 import { chartSchema, type AgentAnswer } from "@/lib/ai/contracts";
 import { number } from "@/lib/utils";
 const colors = [
-  "#15d6a0",
-  "#3b82f6",
-  "#a78bfa",
-  "#38bdf8",
-  "#fbbf24",
-  "#fb7185",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+  "var(--chart-6)",
 ];
 export function EvidenceChart({
   chart,
@@ -37,6 +38,7 @@ export function EvidenceChart({
   chart: NonNullable<AgentAnswer["chart"]>;
   filters?: QueryScope;
 }) {
+  const { t: tr } = usePreferences();
   const [chosenType, setChosenType] = useState<string | null>(null);
   const parsed = chartSchema.safeParse(chart);
   if (!parsed.success) return null;
@@ -65,24 +67,24 @@ export function EvidenceChart({
   const tooltip = (
     <Tooltip
       contentStyle={{
-        background: "#17243a",
-        border: "1px solid #304058",
+        background: "var(--card)",
+        border: "1px solid var(--border)",
         borderRadius: 8,
       }}
-      formatter={(v) => [number(String(v)), spec.unit]}
+      formatter={(v) => [number(String(v)), tr(spec.unit)]}
     />
   );
   const axes = (
     <>
-      <CartesianGrid stroke="#233046" vertical={false} />
+      <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
       <XAxis
         dataKey="label"
-        tick={{ fontSize: 10, fill: "#94a3b8" }}
+        tick={{ fontSize: 10, fill: "var(--chart-axis)" }}
         minTickGap={30}
       />
       <YAxis
         allowDecimals={spec.unit !== "transactions" && spec.unit !== "days"}
-        tick={{ fontSize: 10, fill: "#94a3b8" }}
+        tick={{ fontSize: 10, fill: "var(--chart-axis)" }}
         width={60}
         tickFormatter={(v) => number(v, true)}
       />
@@ -92,24 +94,27 @@ export function EvidenceChart({
   return (
     <figure
       className="evidence-chart"
-      aria-label={`${spec.title} · ${spec.unit}`}
+      aria-label={tr(`${spec.title} · ${tr(spec.unit)}`)}
     >
       <figcaption>
-        {spec.title}
-        <span>{spec.unit} · deterministic calculation</span>
+        {tr(spec.title)}
+        <span>
+          {tr(spec.unit)}
+          {tr(" \u00B7 deterministic calculation")}
+        </span>
       </figcaption>
       <div className="chart-actions">
         <label>
-          Chart type
+          {tr(" Chart type ")}
           <select
-            aria-label="Chart type"
+            aria-label={tr("Chart type")}
             value={spec.type}
             onChange={(e) => setChosenType(e.target.value)}
           >
-            <option value="line">Line</option>
-            <option value="bar">Bar</option>
-            <option value="area">Area</option>
-            {canDonut && <option value="donut">Donut</option>}
+            <option value="line">{tr("Line")}</option>
+            <option value="bar">{tr("Bar")}</option>
+            <option value="area">{tr("Area")}</option>
+            {canDonut && <option value="donut">{tr("Donut")}</option>}
           </select>
         </label>
         <button
@@ -118,7 +123,7 @@ export function EvidenceChart({
           }
         >
           <Download size={13} />
-          Download chart CSV
+          {tr(" Download chart CSV ")}
         </button>
       </div>
       <ResponsiveContainer width="100%" height={230}>
@@ -143,7 +148,7 @@ export function EvidenceChart({
             {axes}
             <Bar
               dataKey="value"
-              fill="#15d6a0"
+              fill="var(--chart-1)"
               radius={[4, 4, 0, 0]}
               isAnimationActive={false}
             />
@@ -154,8 +159,9 @@ export function EvidenceChart({
             <Area
               type="monotone"
               dataKey="value"
-              fill="#15d6a020"
-              stroke="#15d6a0"
+              fill="var(--chart-1)"
+              fillOpacity={0.12}
+              stroke="var(--chart-1)"
               strokeWidth={2}
               isAnimationActive={false}
             />
@@ -166,7 +172,7 @@ export function EvidenceChart({
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#15d6a0"
+              stroke="var(--chart-1)"
               strokeWidth={2}
               dot={data.length < 12}
               isAnimationActive={false}
@@ -176,26 +182,28 @@ export function EvidenceChart({
       </ResponsiveContainer>
       <details>
         <summary>
-          Underlying aggregate data · {spec.points.length} points
+          {tr(" Underlying aggregate data \u00B7 ")}
+          {spec.points.length}
+          {tr(" points ")}
         </summary>
         <div className="table-scroll">
           <table>
             <thead>
               <tr>
-                <th>Period / commodity</th>
-                <th className="numeric">{spec.unit}</th>
-                <th>Source</th>
+                <th>{tr("Period / commodity")}</th>
+                <th className="numeric">{tr(spec.unit)}</th>
+                <th>{tr("Source")}</th>
               </tr>
             </thead>
             <tbody>
               {spec.points.map((p) => (
                 <tr key={p.label}>
-                  <td>{p.label}</td>
-                  <td className="numeric">{p.value ?? "Unavailable"}</td>
+                  <td>{tr(p.label)}</td>
+                  <td className="numeric">{p.value ?? tr("Unavailable")}</td>
                   <td>
                     {p.value !== null && (
                       <Link className="text-link" href={sourceLink(p.label)}>
-                        Source trades
+                        {tr(" Source trades ")}
                       </Link>
                     )}
                   </td>

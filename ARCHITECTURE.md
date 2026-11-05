@@ -12,6 +12,16 @@ Current operating scope: **localhost + GitHub source synchronization only**, as 
 
 The shell joins Dashboard, Trade Explorer, Assistant, Market Explorer and Reports. React components own interaction state; reusable hooks handle cancellation and errors. Recharts renders numeric projections of exact decimal aggregates. Exact values and source records remain available beside charts.
 
+## Interface preferences
+
+`PreferencesProvider` owns the theme and interface language, shared by the navbar and every workspace. `themes.css` defines semantic colors for light/dark surfaces, text, controls, notices and charts. The initial light theme uses white surfaces with emerald, blue and violet accents. Mobile navigation has persistent visible labels.
+
+The root layout reads allowlisted `uzex-theme` and `uzex-language` cookies using the async Next.js cookies API. This intentionally makes the page shell dynamic so the server emits the correct HTML language/theme before hydration, avoiding a theme flash. Preference cookies contain no credentials or analytics records. Controls update the UI immediately and persist for one year; no database or cloud integration is involved.
+
+Uzbek and Russian UI catalogs, interpolation, canonical analytics-sentence patterns and field labels live in `src/lib/i18n`. Localization changes presentation only: source names, identifiers, exact numbers, query arguments and exported CSV values remain unchanged. Unknown imported content is rendered as literal text. The assistant's latest-question language detection stays independent of the interface preference; English is an interface option, while the agent's supported languages remain Uzbek/Russian.
+
+Browser chat history remains bounded and validated. `uzex-active-chat-v2` remembers the selected conversation so a reload restores its saved transcript. New/clear conversation actions reset that selection.
+
 ## Boundaries
 
 | Layer                      | Responsibility                                                                                                                                   |

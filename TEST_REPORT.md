@@ -87,7 +87,7 @@ npm start
 
 `check:gemini` accesses model metadata only. Automated tests mock Gemini or use labeled local tools. Billable inference is excluded unless separately authorized. The browser suite needs installed Google Chrome. Node.js 24 is pinned through `engines`.
 
-## Final results
+## Previous audit results (before interface refresh)
 
 - Clean `npm ci`: passed (645 packages).
 - Lint: passed. Strict typecheck: passed.
@@ -104,3 +104,21 @@ npm start
 - Real application screenshots: `docs/screenshots/release-*.png`; measurement evidence: `docs/qa-matrix.json`.
 
 The local demo and source package pass their release gates. External database verification, fresh paid inference and public hosting are not represented as verified. Vercel/Supabase connection is outside the owner’s requested local-only scope.
+
+## Light/dark and multilingual interface refresh — November 5
+
+The interface now defaults to white surfaces with emerald, blue and violet accents. A global navbar switches light/dark themes and English/Uzbek/Russian across all workspaces. Preferences are validated and server-rendered from cookies. Mobile navigation has visible labels, dashboard date controls remain full-width, and optional report comparison controls are collapsed initially. Original source fields, numeric values and query arguments remain unchanged.
+
+The first browser pass found that reloading retained chat history but discarded the selected conversation. The hook now restores the last selected saved conversation; new/clear actions reset the selection. The persistence regression test passes. A separate new test initially used an isolated API request context without browser preference cookies; it was corrected to test server HTML with the browser's actual context.
+
+- `npm run lint`: passed.
+- `npm run typecheck`: passed.
+- `npm test`: **56 passed**, zero failures/skips; new cases cover allowlisted preferences, catalog/placeholder parity, exact source values, safe interpolation, unknown content and Tashkent date formatting. An ICU/browser fallback avoids unhelpful Uzbek month labels such as `M10`.
+- `npm run test:e2e`: **19 passed**, zero failures/skips in **43.5 seconds**, including the isolated production build/server. Existing dashboard, trade filtering/export, assistant, chart/source and report tests still pass.
+- Added Chrome checks for server-rendered preferences, keyboard theme toggle, reload/navigation persistence, interface translation, retained filters/chart metric, Russian-to-Uzbek assistant context, saved conversation restoration, and layout at **1440/1280/768/390px** in both themes.
+
+The Browser plugin is unavailable; installed Google Chrome is controlled with Playwright. Gemini is mocked or explicitly disabled in the automated suite. This UI change does not establish a fresh paid Gemini-generation result or an external database/deployment result.
+
+Final normal production build and strict typecheck passed. The refreshed build is running at **http://localhost:3000**, bound to loopback, with `DATA_MODE=demo` and the existing `AI_MODE=auto` configuration. Health returns `ok`; the external database is unconfigured. The client-secret scan checked **33 static assets** and found zero configured-secret literals.
+
+The final Chrome visual pass checked **40 page/viewport/theme combinations**: five routes × four widths × two themes. All had meaningful headings, no framework overlay, no document overflow, no application errors and no console warnings. Changing interface language issued **zero additional data requests**. No chat/report generation POST was made during the visual pass. Matrix evidence: `docs/qa-ui-refresh.json`; screenshots: `docs/screenshots/ui-*.png`. The source record names remain unchanged even when interface labels are localized.
